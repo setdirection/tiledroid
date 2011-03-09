@@ -1,0 +1,4 @@
+Overlays deleted on import from the osmdroid project:
+* Minimap
+* Scale bar
+* My location
