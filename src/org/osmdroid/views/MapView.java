@@ -22,7 +22,6 @@ import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
 import org.osmdroid.util.BoundingBoxE6;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.util.constants.GeoConstants;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayManager;
@@ -271,19 +270,17 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		return mProjection;
 	}
 
-	void setMapCenter(final GeoPoint aCenter) {
-		this.setMapCenter(aCenter.getLatitudeE6(), aCenter.getLongitudeE6());
+	void setMapCenter(final Point aCenter, final boolean jump) {
+		this.setMapCenter(aCenter.x, aCenter.y, jump);
 	}
 
-	void setMapCenter(final int aLatitudeE6, final int aLongitudeE6) {
-		final Point coords = Mercator.projectGeoPoint(aLatitudeE6, aLongitudeE6,
-				getPixelZoomLevel(), null);
+	void setMapCenter(final int x, final int y, final boolean jump) {
 		final int worldSize_2 = getWorldSizePx() / 2;
 		if (getAnimation() == null || getAnimation().hasEnded()) {
 			logger.debug("StartScroll");
 			mScroller.startScroll(getScrollX(), getScrollY(),
-					coords.x - worldSize_2 - getScrollX(), coords.y - worldSize_2 - getScrollY(),
-					500);
+					x - worldSize_2 - getScrollX(), y - worldSize_2 - getScrollY(),
+					jump ? 0 : 500);
 			postInvalidate();
 		}
 	}
@@ -424,13 +421,13 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		}
 	}
 
-	boolean zoomInFixing(final GeoPoint point) {
-		setMapCenter(point); // TODO should fix on point, not center on it
+	boolean zoomInFixing(final Point point) {
+		setMapCenter(point, false); // TODO should fix on point, not center on it
 		return zoomIn();
 	}
 
 	boolean zoomInFixing(final int xPixel, final int yPixel) {
-		setMapCenter(xPixel, yPixel); // TODO should fix on point, not center on it
+		setMapCenter(xPixel, yPixel, false); // TODO should fix on point, not center on it
 		return zoomIn();
 	}
 
@@ -454,26 +451,18 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		}
 	}
 
-	boolean zoomOutFixing(final GeoPoint point) {
-		setMapCenter(point); // TODO should fix on point, not center on it
+	boolean zoomOutFixing(final Point point) {
+		setMapCenter(point, false); // TODO should fix on point, not center on it
 		return zoomOut();
 	}
 
 	boolean zoomOutFixing(final int xPixel, final int yPixel) {
-		setMapCenter(xPixel, yPixel); // TODO should fix on point, not center on it
+		setMapCenter(xPixel, yPixel, false); // TODO should fix on point, not center on it
 		return zoomOut();
 	}
 
-	public GeoPoint getMapCenter() {
-		return new GeoPoint(getMapCenterLatitudeE6(), getMapCenterLongitudeE6());
-	}
-
-	public int getMapCenterLatitudeE6() {
-		return (int) (Mercator.tile2lat(getScrollY() + getWorldSizePx() / 2, getPixelZoomLevel()) * 1E6);
-	}
-
-	public int getMapCenterLongitudeE6() {
-		return (int) (Mercator.tile2lon(getScrollX() + getWorldSizePx() / 2, getPixelZoomLevel()) * 1E6);
+	public Point getMapCenter() {
+		return mProjection.toCurrentZoom(getScrollX(), getScrollY(), null);
 	}
 
 	public ResourceProxy getResourceProxy() {

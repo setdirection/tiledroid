@@ -1,10 +1,6 @@
 // Created by plusminus on 21:37:08 - 27.09.2008
 package org.osmdroid.views;
 
-import org.osmdroid.util.BoundingBoxE6;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.util.Mercator;
-import org.osmdroid.views.util.MyMath;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import org.osmdroid.views.util.constants.MathConstants;
 
@@ -49,13 +45,8 @@ public class MapController implements MapViewConstants {
 	/**
 	 * Start animating the map towards the given point.
 	 */
-	public void animateTo(final GeoPoint point) {
-		final int x = mOsmv.getScrollX();
-		final int y = mOsmv.getScrollY();
-		final Point p = Mercator.projectGeoPoint(point, this.mOsmv.getPixelZoomLevel(), null);
-		final int worldSize_2 = this.mOsmv.getWorldSizePx() / 2;
-		mOsmv.getScroller().startScroll(x, y, p.x - worldSize_2 - x, p.y - worldSize_2 - y,
-				ANIMATION_DURATION_DEFAULT);
+	public void animateTo(final Point point) {
+		mOsmv.setMapCenter(point, false);
 		mOsmv.postInvalidate();
 	}
 
@@ -66,8 +57,8 @@ public class MapController implements MapViewConstants {
 	 *
 	 * @param gp
 	 */
-	public void animateTo(final GeoPoint gp, final AnimationType aAnimationType) {
-		animateTo(gp.getLatitudeE6(), gp.getLongitudeE6(), aAnimationType,
+	public void animateTo(final Point gp, final AnimationType aAnimationType) {
+		animateTo(gp.x, gp.y, aAnimationType,
 				ANIMATION_DURATION_DEFAULT, ANIMATION_SMOOTHNESS_DEFAULT);
 	}
 
@@ -86,9 +77,9 @@ public class MapController implements MapViewConstants {
 	 *            {@link MapController.ANIMATION_DURATION_DEFAULT},
 	 *            {@link MapController.ANIMATION_DURATION_LONG}
 	 */
-	public void animateTo(final GeoPoint gp, final AnimationType aAnimationType,
+	public void animateTo(final Point gp, final AnimationType aAnimationType,
 			final int aSmoothness, final int aDuration) {
-		animateTo(gp.getLatitudeE6(), gp.getLongitudeE6(), aAnimationType, aSmoothness, aDuration);
+		animateTo(gp.x, gp.y, aAnimationType, aSmoothness, aDuration);
 	}
 
 	/**
@@ -96,20 +87,20 @@ public class MapController implements MapViewConstants {
 	 * Uses: {@link MapController.ANIMATION_SMOOTHNESS_DEFAULT} and
 	 * {@link MapController.ANIMATION_DURATION_DEFAULT}.
 	 *
-	 * @param aLatitudeE6
-	 * @param aLongitudeE6
+	 * @param aWorldX
+	 * @param aWorldY
 	 */
-	public void animateTo(final int aLatitudeE6, final int aLongitudeE6,
+	public void animateTo(final int aWorldX, final int aWorldY,
 			final AnimationType aAnimationType) {
-		animateTo(aLatitudeE6, aLongitudeE6, aAnimationType, ANIMATION_SMOOTHNESS_DEFAULT,
+		animateTo(aWorldX, aWorldY, aAnimationType, ANIMATION_SMOOTHNESS_DEFAULT,
 				ANIMATION_DURATION_DEFAULT);
 	}
 
 	/**
 	 * Animates the underlying {@link MapView} that it centers the passed coordinates in the end.
 	 *
-	 * @param aLatitudeE6
-	 * @param aLongitudeE6
+	 * @param aWorldX
+	 * @param aWorldY
 	 * @param aSmoothness
 	 *            steps made during animation. I.e.: {@link MapController.ANIMATION_SMOOTHNESS_LOW},
 	 *            {@link MapController.ANIMATION_SMOOTHNESS_DEFAULT},
@@ -119,30 +110,30 @@ public class MapController implements MapViewConstants {
 	 *            {@link MapController.ANIMATION_DURATION_DEFAULT},
 	 *            {@link MapController.ANIMATION_DURATION_LONG}
 	 */
-	public void animateTo(final int aLatitudeE6, final int aLongitudeE6,
+	public void animateTo(final int aWorldX, final int aWorldY,
 			final AnimationType aAnimationType, final int aSmoothness, final int aDuration) {
 		this.stopAnimation(false);
 
 		switch (aAnimationType) {
 		case LINEAR:
-			this.mCurrentAnimationRunner = new LinearAnimationRunner(aLatitudeE6, aLongitudeE6,
+			this.mCurrentAnimationRunner = new LinearAnimationRunner(aWorldX, aWorldY,
 					aSmoothness, aDuration);
 			break;
 		case EXPONENTIALDECELERATING:
-			this.mCurrentAnimationRunner = new ExponentialDeceleratingAnimationRunner(aLatitudeE6,
-					aLongitudeE6, aSmoothness, aDuration);
+			this.mCurrentAnimationRunner = new ExponentialDeceleratingAnimationRunner(aWorldX,
+					aWorldY, aSmoothness, aDuration);
 			break;
 		case QUARTERCOSINUSALDECELERATING:
 			this.mCurrentAnimationRunner = new QuarterCosinusalDeceleratingAnimationRunner(
-					aLatitudeE6, aLongitudeE6, aSmoothness, aDuration);
+					aWorldX, aWorldY, aSmoothness, aDuration);
 			break;
 		case HALFCOSINUSALDECELERATING:
 			this.mCurrentAnimationRunner = new HalfCosinusalDeceleratingAnimationRunner(
-					aLatitudeE6, aLongitudeE6, aSmoothness, aDuration);
+					aWorldX, aWorldY, aSmoothness, aDuration);
 			break;
 		case MIDDLEPEAKSPEED:
-			this.mCurrentAnimationRunner = new MiddlePeakSpeedAnimationRunner(aLatitudeE6,
-					aLongitudeE6, aSmoothness, aDuration);
+			this.mCurrentAnimationRunner = new MiddlePeakSpeedAnimationRunner(aWorldX,
+					aWorldY, aSmoothness, aDuration);
 			break;
 		}
 
@@ -156,10 +147,8 @@ public class MapController implements MapViewConstants {
 	/**
 	 * Set the map view to the given center. There will be no animation.
 	 */
-	public void setCenter(final GeoPoint point) {
-		final Point p = Mercator.projectGeoPoint(point, this.mOsmv.getPixelZoomLevel(), null);
-		final int worldSize_2 = this.mOsmv.getWorldSizePx() / 2;
-		this.mOsmv.scrollTo(p.x - worldSize_2, p.y - worldSize_2);
+	public void setCenter(final Point point) {
+		this.mOsmv.setMapCenter(point, true);
 	}
 
 	/**
@@ -173,8 +162,8 @@ public class MapController implements MapViewConstants {
 		if (currentAnimationRunner != null && !currentAnimationRunner.isDone()) {
 			currentAnimationRunner.interrupt();
 			if (jumpToTarget) {
-				setCenter(new GeoPoint(currentAnimationRunner.mTargetLatitudeE6,
-						currentAnimationRunner.mTargetLongitudeE6));
+				setCenter(new Point(currentAnimationRunner.mTargetWorldX,
+						currentAnimationRunner.mTargetWorldY));
 			}
 		}
 	}
@@ -190,7 +179,7 @@ public class MapController implements MapViewConstants {
 		return mOsmv.zoomIn();
 	}
 
-	public boolean zoomInFixing(final GeoPoint point) {
+	public boolean zoomInFixing(final Point point) {
 		return mOsmv.zoomInFixing(point);
 	}
 
@@ -205,7 +194,7 @@ public class MapController implements MapViewConstants {
 		return mOsmv.zoomOut();
 	}
 
-	public boolean zoomOutFixing(final GeoPoint point) {
+	public boolean zoomOutFixing(final Point point) {
 		return mOsmv.zoomOutFixing(point);
 	}
 
@@ -327,12 +316,12 @@ public class MapController implements MapViewConstants {
 		// ===========================================================
 
 		protected final int mSmoothness;
-		protected final int mTargetLatitudeE6, mTargetLongitudeE6;
+		protected final int mTargetWorldX, mTargetWorldY;
 		protected boolean mDone = false;
 
 		protected final int mStepDuration;
 
-		protected final int mPanTotalLatitudeE6, mPanTotalLongitudeE6;
+		protected final int mPanTotalWorldX, mPanTotalWorldY;
 
 		// ===========================================================
 		// Constructors
@@ -340,26 +329,25 @@ public class MapController implements MapViewConstants {
 
 		@SuppressWarnings("unused")
 		public AbstractAnimationRunner(final MapController mapViewController,
-				final int aTargetLatitudeE6, final int aTargetLongitudeE6) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6,
+				final int targetWorldX, final int targetWorldY) {
+			this(targetWorldX, targetWorldY,
 					MapViewConstants.ANIMATION_SMOOTHNESS_DEFAULT,
 					MapViewConstants.ANIMATION_DURATION_DEFAULT);
 		}
 
-		public AbstractAnimationRunner(final int aTargetLatitudeE6, final int aTargetLongitudeE6,
+		public AbstractAnimationRunner(final int targetWorldX, final int targetWorldY,
 				final int aSmoothness, final int aDuration) {
-			this.mTargetLatitudeE6 = aTargetLatitudeE6;
-			this.mTargetLongitudeE6 = aTargetLongitudeE6;
+			this.mTargetWorldX = targetWorldX;
+			this.mTargetWorldY = targetWorldX;
 			this.mSmoothness = aSmoothness;
 			this.mStepDuration = aDuration / aSmoothness;
 
 			/* Get the current mapview-center. */
 			final MapView mapview = MapController.this.mOsmv;
-			final int mapCenterLatE6 = mapview.getMapCenterLatitudeE6();
-			final int mapCenterLonE6 = mapview.getMapCenterLongitudeE6();
+			final Point mapCenter = mapview.getMapCenter();
 
-			this.mPanTotalLatitudeE6 = mapCenterLatE6 - aTargetLatitudeE6;
-			this.mPanTotalLongitudeE6 = mapCenterLonE6 - aTargetLongitudeE6;
+			this.mPanTotalWorldX = mapCenter.x - targetWorldX;
+			this.mPanTotalWorldY = mapCenter.y - targetWorldY;
 		}
 
 		@Override
@@ -381,29 +369,28 @@ public class MapController implements MapViewConstants {
 		// Fields
 		// ===========================================================
 
-		protected final int mPanPerStepLatitudeE6, mPanPerStepLongitudeE6;
+		protected final int mPanPerStepWorldX, mPanPerStepWorldY;
 
 		// ===========================================================
 		// Constructors
 		// ===========================================================
 
 		@SuppressWarnings("unused")
-		public LinearAnimationRunner(final int aTargetLatitudeE6, final int aTargetLongitudeE6) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6, ANIMATION_SMOOTHNESS_DEFAULT,
+		public LinearAnimationRunner(final int aTargetWorldX, final int aTargetWorldY) {
+			this(aTargetWorldX, aTargetWorldY, ANIMATION_SMOOTHNESS_DEFAULT,
 					ANIMATION_DURATION_DEFAULT);
 		}
 
-		public LinearAnimationRunner(final int aTargetLatitudeE6, final int aTargetLongitudeE6,
+		public LinearAnimationRunner(final int targetWorldX, final int targetWorldY,
 				final int aSmoothness, final int aDuration) {
-			super(aTargetLatitudeE6, aTargetLongitudeE6, aSmoothness, aDuration);
+			super(targetWorldX, targetWorldY, aSmoothness, aDuration);
 
 			/* Get the current mapview-center. */
 			final MapView mapview = MapController.this.mOsmv;
-			final int mapCenterLatE6 = mapview.getMapCenterLatitudeE6();
-			final int mapCenterLonE6 = mapview.getMapCenterLongitudeE6();
+			final Point mapCenter = mapview.getMapCenter();
 
-			this.mPanPerStepLatitudeE6 = (mapCenterLatE6 - aTargetLatitudeE6) / aSmoothness;
-			this.mPanPerStepLongitudeE6 = (mapCenterLonE6 - aTargetLongitudeE6) / aSmoothness;
+			this.mPanPerStepWorldX = (mapCenter.x - targetWorldX) / aSmoothness;
+			this.mPanPerStepWorldY = (mapCenter.y - targetWorldY) / aSmoothness;
 
 			this.setName("LinearAnimationRunner");
 		}
@@ -415,18 +402,19 @@ public class MapController implements MapViewConstants {
 		@Override
 		public void onRunAnimation() {
 			final MapView mapview = MapController.this.mOsmv;
-			final int panPerStepLatitudeE6 = this.mPanPerStepLatitudeE6;
-			final int panPerStepLongitudeE6 = this.mPanPerStepLongitudeE6;
+			final int panPerStepWorldX = this.mPanPerStepWorldX;
+			final int panPerStepWorldY = this.mPanPerStepWorldY;
 			final int stepDuration = this.mStepDuration;
 			try {
-				int newMapCenterLatE6;
-				int newMapCenterLonE6;
+				int newMapCenterWorldX;
+				int newMapCenterWorldY;
 
 				for (int i = this.mSmoothness; i > 0; i--) {
+					final Point mapCenter = mapview.getMapCenter();
 
-					newMapCenterLatE6 = mapview.getMapCenterLatitudeE6() - panPerStepLatitudeE6;
-					newMapCenterLonE6 = mapview.getMapCenterLongitudeE6() - panPerStepLongitudeE6;
-					mapview.setMapCenter(newMapCenterLatE6, newMapCenterLonE6);
+					newMapCenterWorldX = mapCenter.x - panPerStepWorldX;
+					newMapCenterWorldY = mapCenter.y - panPerStepWorldY;
+					mapview.setMapCenter(newMapCenterWorldX, newMapCenterWorldY, false);
 
 					Thread.sleep(stepDuration);
 				}
@@ -447,15 +435,15 @@ public class MapController implements MapViewConstants {
 		// ===========================================================
 
 		@SuppressWarnings("unused")
-		public ExponentialDeceleratingAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6, ANIMATION_SMOOTHNESS_DEFAULT,
+		public ExponentialDeceleratingAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY) {
+			this(aTargetWorldX, aTargetWorldY, ANIMATION_SMOOTHNESS_DEFAULT,
 					ANIMATION_DURATION_DEFAULT);
 		}
 
-		public ExponentialDeceleratingAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6, final int aSmoothness, final int aDuration) {
-			super(aTargetLatitudeE6, aTargetLongitudeE6, aSmoothness, aDuration);
+		public ExponentialDeceleratingAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY, final int aSmoothness, final int aDuration) {
+			super(aTargetWorldX, aTargetWorldY, aSmoothness, aDuration);
 
 			this.setName("ExponentialDeceleratingAnimationRunner");
 		}
@@ -469,22 +457,23 @@ public class MapController implements MapViewConstants {
 			final MapView mapview = MapController.this.mOsmv;
 			final int stepDuration = this.mStepDuration;
 			try {
-				int newMapCenterLatE6;
-				int newMapCenterLonE6;
+				int newMapCenterWorldX;
+				int newMapCenterWorldY;
 
 				for (int i = 0; i < this.mSmoothness; i++) {
 
+					final Point mapCenter = mapview.getMapCenter();
 					final double delta = Math.pow(0.5, i + 1);
-					final int deltaLatitudeE6 = (int) (this.mPanTotalLatitudeE6 * delta);
-					final int detlaLongitudeE6 = (int) (this.mPanTotalLongitudeE6 * delta);
+					final int deltaWorldX = (int) (this.mPanTotalWorldX * delta);
+					final int detlaWorldY = (int) (this.mPanTotalWorldY * delta);
 
-					newMapCenterLatE6 = mapview.getMapCenterLatitudeE6() - deltaLatitudeE6;
-					newMapCenterLonE6 = mapview.getMapCenterLongitudeE6() - detlaLongitudeE6;
-					mapview.setMapCenter(newMapCenterLatE6, newMapCenterLonE6);
+					newMapCenterWorldX = mapCenter.x - deltaWorldX;
+					newMapCenterWorldY = mapCenter.y - detlaWorldY;
+					mapview.setMapCenter(newMapCenterWorldX, newMapCenterWorldY, false);
 
 					Thread.sleep(stepDuration);
 				}
-				mapview.setMapCenter(super.mTargetLatitudeE6, super.mTargetLongitudeE6);
+				mapview.setMapCenter(mTargetWorldX, mTargetWorldY, false);
 			} catch (final Exception e) {
 				this.interrupt();
 			}
@@ -505,17 +494,17 @@ public class MapController implements MapViewConstants {
 		// ===========================================================
 
 		@SuppressWarnings("unused")
-		public CosinusalBasedAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6, final float aStart, final float aRange,
+		public CosinusalBasedAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY, final float aStart, final float aRange,
 				final float aYOffset) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6, ANIMATION_SMOOTHNESS_DEFAULT,
+			this(aTargetWorldX, aTargetWorldY, ANIMATION_SMOOTHNESS_DEFAULT,
 					ANIMATION_DURATION_DEFAULT, aStart, aRange, aYOffset);
 		}
 
-		public CosinusalBasedAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6, final int aSmoothness, final int aDuration,
+		public CosinusalBasedAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY, final int aSmoothness, final int aDuration,
 				final float aStart, final float aRange, final float aYOffset) {
-			super(aTargetLatitudeE6, aTargetLongitudeE6, aSmoothness, aDuration);
+			super(aTargetWorldX, aTargetWorldY, aSmoothness, aDuration);
 			this.mYOffset = aYOffset;
 			this.mStart = aStart;
 
@@ -542,24 +531,25 @@ public class MapController implements MapViewConstants {
 			final int stepDuration = this.mStepDuration;
 			final float amountStretch = this.mAmountStretch;
 			try {
-				int newMapCenterLatE6;
-				int newMapCenterLonE6;
+				int newMapCenterWorldX;
+				int newMapCenterWorldY;
 
 				for (int i = 0; i < this.mSmoothness; i++) {
 
+					final Point mapCenter = mapview.getMapCenter();
 					final double delta = (this.mYOffset + Math.cos(this.mStepIncrement * i
 							+ this.mStart))
 							* amountStretch;
-					final int deltaLatitudeE6 = (int) (this.mPanTotalLatitudeE6 * delta);
-					final int deltaLongitudeE6 = (int) (this.mPanTotalLongitudeE6 * delta);
+					final int deltaWorldX = (int) (this.mPanTotalWorldX * delta);
+					final int deltaWorldY = (int) (this.mPanTotalWorldY * delta);
 
-					newMapCenterLatE6 = mapview.getMapCenterLatitudeE6() - deltaLatitudeE6;
-					newMapCenterLonE6 = mapview.getMapCenterLongitudeE6() - deltaLongitudeE6;
-					mapview.setMapCenter(newMapCenterLatE6, newMapCenterLonE6);
+					newMapCenterWorldX = mapCenter.x - deltaWorldX;
+					newMapCenterWorldY = mapCenter.y - deltaWorldY;
+					mapview.setMapCenter(newMapCenterWorldX, newMapCenterWorldY, false);
 
 					Thread.sleep(stepDuration);
 				}
-				mapview.setMapCenter(super.mTargetLatitudeE6, super.mTargetLongitudeE6);
+				mapview.setMapCenter(mTargetWorldX, mTargetWorldY, false);
 			} catch (final Exception e) {
 				this.interrupt();
 			}
@@ -572,15 +562,15 @@ public class MapController implements MapViewConstants {
 		// Constructors
 		// ===========================================================
 
-		protected QuarterCosinusalDeceleratingAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6, ANIMATION_SMOOTHNESS_DEFAULT,
+		protected QuarterCosinusalDeceleratingAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY) {
+			this(aTargetWorldX, aTargetWorldY, ANIMATION_SMOOTHNESS_DEFAULT,
 					ANIMATION_DURATION_DEFAULT);
 		}
 
-		protected QuarterCosinusalDeceleratingAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6, final int aSmoothness, final int aDuration) {
-			super(aTargetLatitudeE6, aTargetLongitudeE6, aSmoothness, aDuration, 0, PI_2, 0);
+		protected QuarterCosinusalDeceleratingAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY, final int aSmoothness, final int aDuration) {
+			super(aTargetWorldX, aTargetWorldY, aSmoothness, aDuration, 0, PI_2, 0);
 		}
 	}
 
@@ -590,15 +580,15 @@ public class MapController implements MapViewConstants {
 		// Constructors
 		// ===========================================================
 
-		protected HalfCosinusalDeceleratingAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6, ANIMATION_SMOOTHNESS_DEFAULT,
+		protected HalfCosinusalDeceleratingAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY) {
+			this(aTargetWorldX, aTargetWorldY, ANIMATION_SMOOTHNESS_DEFAULT,
 					ANIMATION_DURATION_DEFAULT);
 		}
 
-		protected HalfCosinusalDeceleratingAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6, final int aSmoothness, final int aDuration) {
-			super(aTargetLatitudeE6, aTargetLongitudeE6, aSmoothness, aDuration, 0, PI, 1);
+		protected HalfCosinusalDeceleratingAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY, final int aSmoothness, final int aDuration) {
+			super(aTargetWorldX, aTargetWorldY, aSmoothness, aDuration, 0, PI, 1);
 		}
 	}
 
@@ -608,15 +598,15 @@ public class MapController implements MapViewConstants {
 		// Constructors
 		// ===========================================================
 
-		protected MiddlePeakSpeedAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6) {
-			this(aTargetLatitudeE6, aTargetLongitudeE6, ANIMATION_SMOOTHNESS_DEFAULT,
+		protected MiddlePeakSpeedAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY) {
+			this(aTargetWorldX, aTargetWorldY, ANIMATION_SMOOTHNESS_DEFAULT,
 					ANIMATION_DURATION_DEFAULT);
 		}
 
-		protected MiddlePeakSpeedAnimationRunner(final int aTargetLatitudeE6,
-				final int aTargetLongitudeE6, final int aSmoothness, final int aDuration) {
-			super(aTargetLatitudeE6, aTargetLongitudeE6, aSmoothness, aDuration, -PI_2, PI, 0);
+		protected MiddlePeakSpeedAnimationRunner(final int aTargetWorldX,
+				final int aTargetWorldY, final int aSmoothness, final int aDuration) {
+			super(aTargetWorldX, aTargetWorldY, aSmoothness, aDuration, -PI_2, PI, 0);
 		}
 	}
 }
