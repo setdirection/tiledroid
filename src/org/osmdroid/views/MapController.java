@@ -46,36 +46,6 @@ public class MapController implements MapViewConstants {
 	// ===========================================================
 	// Methods
 	// ===========================================================
-
-	public void zoomToSpan(final BoundingBoxE6 bb) {
-		zoomToSpan(bb.getLatitudeSpanE6(), bb.getLongitudeSpanE6());
-	}
-
-	// TODO rework zoomToSpan
-	public void zoomToSpan(final int reqLatSpan, final int reqLonSpan) {
-		if (reqLatSpan <= 0 || reqLonSpan <= 0) {
-			return;
-		}
-
-		final BoundingBoxE6 bb = this.mOsmv.getBoundingBox();
-		final int curZoomLevel = this.mOsmv.getZoomLevel();
-
-		final int curLatSpan = bb.getLatitudeSpanE6();
-		final int curLonSpan = bb.getLongitudeSpanE6();
-
-		final float diffNeededLat = (float) reqLatSpan / curLatSpan; // i.e. 600/500 = 1,2
-		final float diffNeededLon = (float) reqLonSpan / curLonSpan; // i.e. 300/400 = 0,75
-
-		final float diffNeeded = Math.max(diffNeededLat, diffNeededLon); // i.e. 1,2
-
-		if (diffNeeded > 1) { // Zoom Out
-			this.mOsmv.setZoomLevel(curZoomLevel - MyMath.getNextSquareNumberAbove(diffNeeded));
-		} else if (diffNeeded < 0.5) { // Can Zoom in
-			this.mOsmv.setZoomLevel(curZoomLevel + MyMath.getNextSquareNumberAbove(1 / diffNeeded)
-					- 1);
-		}
-	}
-
 	/**
 	 * Start animating the map towards the given point.
 	 */
