@@ -1194,10 +1194,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			return rect;
 		}
 
-		public float metersToEquatorPixels(final float meters) {
-			return meters / EQUATORCIRCUMFENCE * getWorldSizePx();
-		}
-
 		public Point toPixels(final GeoPoint in, final Point out) {
 			return toMapPixels(in, out);
 		}
