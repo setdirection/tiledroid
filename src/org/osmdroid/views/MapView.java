@@ -21,12 +21,10 @@ import org.osmdroid.tileprovider.tilesource.IStyledTileSource;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
-import org.osmdroid.util.BoundingBoxE6;
 import org.osmdroid.util.constants.GeoConstants;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayManager;
 import org.osmdroid.views.overlay.TilesOverlay;
-import org.osmdroid.views.util.Mercator;
 import org.osmdroid.views.util.constants.MapViewConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -219,14 +217,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		return mTileRequestCompleteHandler;
 	}
 
-	public int getLatitudeSpan() {
-		return this.getBoundingBox().getLatitudeSpanE6();
-	}
-
-	public int getLongitudeSpan() {
-		return this.getBoundingBox().getLongitudeSpanE6();
-	}
-
 	public static int getMapTileZoom(final int tileSizePixels) {
 		if (tileSizePixels <= 0) {
 			return 0;
@@ -239,22 +229,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			a++;
 		}
 		return a - 1;
-	}
-
-	public BoundingBoxE6 getBoundingBox() {
-		return getBoundingBox(getWidth(), getHeight());
-	}
-
-	public BoundingBoxE6 getBoundingBox(final int pViewWidth, final int pViewHeight) {
-		final int mapTileZoom = getMapTileZoom(mTileSizePixels);
-		final int world_2 = 1 << mZoomLevel + mapTileZoom - 1;
-		final int north = world_2 + getScrollY() - getHeight() / 2;
-		final int south = world_2 + getScrollY() + getHeight() / 2;
-		final int west = world_2 + getScrollX() - getWidth() / 2;
-		final int east = world_2 + getScrollX() + getWidth() / 2;
-
-		return Mercator
-				.getBoundingBoxFromCoords(west, north, east, south, mZoomLevel + mapTileZoom);
 	}
 
 	/**
