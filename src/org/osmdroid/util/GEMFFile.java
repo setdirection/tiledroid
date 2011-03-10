@@ -15,12 +15,12 @@ import java.util.TreeSet;
 
 /**
  * GEMF File handler class.
- * 
+ *
  * Reference: https://sites.google.com/site/abudden/android-map-store
- * 
+ *
  * @author A. S. Budden
  * @author Erik Burrows
- * 
+ *
  */
 public class GEMFFile {
 
@@ -30,14 +30,14 @@ public class GEMFFile {
 
 	private static final long FILE_SIZE_LIMIT = 1 * 1024 * 1024 * 1024; // 1GB
 	private static final int FILE_COPY_BUFFER_SIZE = 1024;
-	
+
 	private static final int VERSION = 4;
 	private static final int TILE_SIZE = 256;
 
 	private static final int U32_SIZE = 4;
 	private static final int U64_SIZE = 8;
-	
-	
+
+
 	// ===========================================================
 	// Fields
 	// ===========================================================
@@ -60,27 +60,27 @@ public class GEMFFile {
 	// Fields to restrict to a single source for reading
 	private boolean mSourceLimited = false;
 	private int mCurrentSource = 0;
-	
-	
+
+
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-	
-	
+
+
 	/*
 	 * Constructor to read existing GEMF archive
-	 * 
+	 *
 	 * @param pLocation
 	 * 		File object representing first GEMF archive file
 	 */
 	public GEMFFile (File pLocation) throws FileNotFoundException, IOException {
 		this(pLocation.getAbsolutePath());
 	}
-	
-	
+
+
 	/*
 	 * Constructor to read existing GEMF archive
-	 * 
+	 *
 	 * @param pLocation
 	 * 		String object representing path to first GEMF archive file
 	 */
@@ -89,11 +89,11 @@ public class GEMFFile {
 		openFiles();
 		readHeader();
 	}
-	
-	
+
+
 	/*
 	 * Constructor to create new GEMF file from directory of sources/tiles.
-	 * 
+	 *
 	 * @param pLocation
 	 * 		String object representing path to first GEMF archive file.
 	 * 		Additional files (if archive size exceeds FILE_SIZE_LIMIT
@@ -102,7 +102,8 @@ public class GEMFFile {
 	 * 		Each specified folder will be imported into the GEMF archive as a seperate
 	 * 		source. The name of the folder will be the name of the source in the archive.
 	 */
-	public GEMFFile (final String pLocation, final List<File> pSourceFolders) 
+	@SuppressWarnings("boxing")
+	public GEMFFile (final String pLocation, final List<File> pSourceFolders)
 		throws FileNotFoundException, IOException {
 		/*
 		 * 1. For each source folder
@@ -110,7 +111,7 @@ public class GEMFFile {
 		 * 2. Build index data structure index[source][zoom][range]
 		 *   1. For each S-Z-X find list of Ys values
 		 *   2. For each S-Z-X-Ys set, find complete X ranges
-		 *   3. For each S-Z-Xr-Ys set, find complete Y ranges, create Range record  
+		 *   3. For each S-Z-Xr-Ys set, find complete Y ranges, create Range record
 		 * 3. Write out index
 		 *   1. Header
 		 *   2. Sources
@@ -121,16 +122,16 @@ public class GEMFFile {
 		 *     1. If over file size limit, start new data file
 		 *     2. Write tile data
 		 */
-		
+
 		this.mLocation = pLocation;
-		
+
 		// Create in-memory array of sources, X and Y values.
-		HashMap<String, HashMap<Integer, HashMap<Integer, HashMap<Integer, File>>>> dirIndex = 
+		HashMap<String, HashMap<Integer, HashMap<Integer, HashMap<Integer, File>>>> dirIndex =
 			new HashMap<String, HashMap<Integer, HashMap<Integer, HashMap<Integer, File>>>>();
-		
+
 		for (File sourceDir: pSourceFolders) {
 
-			HashMap<Integer, HashMap<Integer, HashMap<Integer, File>>> zList = 
+			HashMap<Integer, HashMap<Integer, HashMap<Integer, File>>> zList =
 				new HashMap<Integer, HashMap<Integer, HashMap<Integer, File>>>();
 
 			for (File zDir: sourceDir.listFiles()) {
@@ -140,19 +141,19 @@ public class GEMFFile {
 				} catch (NumberFormatException e) {
 					continue;
 				}
-				
-				HashMap<Integer, HashMap<Integer, File>> xList = 
+
+				HashMap<Integer, HashMap<Integer, File>> xList =
 					new HashMap<Integer, HashMap<Integer, File>>();
-				
+
 				for (File xDir: zDir.listFiles()) {
 
 					// Make sure the directory name is just a number
 					try {
 						Integer.parseInt(xDir.getName());
 					} catch (NumberFormatException e) {
-						continue; 
+						continue;
 					}
-				
+
 					HashMap<Integer, File> yList = new HashMap<Integer, File>();
 					for (File yFile: xDir.listFiles()) {
 
@@ -166,16 +167,16 @@ public class GEMFFile {
 						yList.put(Integer.parseInt(yFile.getName().substring(
 								0, yFile.getName().indexOf('.'))), yFile);
 					}
-				
+
 					xList.put(new Integer(xDir.getName()), yList);
 				}
 
 				zList.put(Integer.parseInt(zDir.getName()), xList);
 			}
-				
+
 			dirIndex.put(sourceDir.getName(), zList);
 		}
-		
+
 		// Create a source index list
 		HashMap<String, Integer> sourceIndex = new HashMap<String, Integer>();
 		HashMap<Integer, String> indexSource = new HashMap<Integer, String>();
@@ -188,34 +189,34 @@ public class GEMFFile {
 
 		// Create the range objects
 		List<GEMFRange> ranges = new ArrayList<GEMFRange>();
-	
+
 		for (String source: dirIndex.keySet()) {
 			for (Integer zoom: dirIndex.get(source).keySet()) {
-		
+
 				// Get non-contiguous Y sets for each Z/X
-				HashMap<List<Integer>, List<Integer>> ySets = 
+				HashMap<List<Integer>, List<Integer>> ySets =
 					new HashMap<List<Integer>, List<Integer>>();
-				
+
 				for (Integer x: dirIndex.get(source).get(zoom).keySet()) {
 					List<Integer> ySet = new ArrayList<Integer>();
 					for (Integer y: dirIndex.get(source).get(zoom).get(x).keySet()) {
 						ySet.add(y);
 					}
-				
+
 					if (! ySets.containsKey(ySet)) {
 						ySets.put(ySet, new ArrayList<Integer>());
 					}
-					
+
 					ySets.get(ySet).add(x);
 				}
-			
+
 				// For each Y set find contiguous X sets
-				HashMap<List<Integer>, List<Integer>> xSets = 
+				HashMap<List<Integer>, List<Integer>> xSets =
 					new HashMap<List<Integer>, List<Integer>>();
-				
+
 				for (List<Integer> ySet: ySets.keySet()) {
 					TreeSet<Integer> xList = new TreeSet<Integer>(ySets.get(ySet));
-					
+
 					List<Integer> xSet = new ArrayList<Integer>();
 					for(int i = xList.first(); i < xList.last() + 1; ++i) {
 						if (xList.contains(new Integer(i))) {
@@ -227,7 +228,7 @@ public class GEMFFile {
 							}
 						}
 					}
-					
+
 					xSets.put(ySet, xSet);
 				}
 
@@ -235,20 +236,20 @@ public class GEMFFile {
 				for (List<Integer> xSet: xSets.keySet()) {
 					TreeSet<Integer> yList = new TreeSet<Integer>(xSet);
 					TreeSet<Integer> xList = new TreeSet<Integer>(ySets.get(xSet));
-				
+
 					GEMFRange range = new GEMFFile.GEMFRange();
 					range.zoom = zoom;
 					range.sourceIndex = sourceIndex.get(source);
 					range.xMin = xList.first();
 					range.xMax = xList.last();
-					
+
 					for(int i = yList.first(); i < yList.last() + 1; ++i) {
 						if (yList.contains(new Integer(i))) {
 							if (range.yMin == null) range.yMin = i;
 							range.yMax = i;
 						} else {
 							ranges.add(range);
-							
+
 							range = new GEMFFile.GEMFRange();
 							range.zoom = zoom;
 							range.sourceIndex = sourceIndex.get(source);
@@ -256,60 +257,60 @@ public class GEMFFile {
 							range.xMax = xList.last();
 						}
 					}
-					
+
 					ranges.add(range);
 				}
 			}
 		}
-		
-		
+
+
 		// Calculate size of header for computation of data offsets
 		int source_list_size = 0;
 		for (String source: sourceIndex.keySet())
 			source_list_size += (U32_SIZE + U32_SIZE + source.length());
 
-		long offset = 
+		long offset =
 			U32_SIZE + // GEMF Version
 			U32_SIZE + // Tile size
 			U32_SIZE + // Number of sources
-			source_list_size + 
+			source_list_size +
 			ranges.size() * ((U32_SIZE * 6) + U64_SIZE) +
 			U32_SIZE; // Number of ranges
-		
+
 		// Calculate offset for each range in the data set
 		for (GEMFRange range: ranges) {
 			range.offset = offset;
-			
+
 			for (int x = range.xMin; x < range.xMax + 1; ++x) {
 				for (int y = range.yMin; y < range.yMax + 1; ++y) {
 					offset += (U32_SIZE + U64_SIZE);
 				}
 			}
 		}
-		
+
 		long headerSize = offset;
 
 		RandomAccessFile gemfFile = new RandomAccessFile(pLocation, "rw");
 
 		// Write version header
 		gemfFile.writeInt(VERSION);
-		
+
 		// Write file size header
 		gemfFile.writeInt(TILE_SIZE);
-		
+
 		// Write number of sources
 		gemfFile.writeInt(sourceIndex.size());
-		
+
 		// Write source list
 		for (String source: sourceIndex.keySet()) {
 			gemfFile.writeInt(sourceIndex.get(source));
 			gemfFile.writeInt(source.length());
 			gemfFile.write(source.getBytes());
 		}
-		
+
 		// Write number of ranges
 		gemfFile.writeInt(ranges.size());
-		
+
 		// Write range objects
 		for (GEMFRange range: ranges) {
 			gemfFile.writeInt(range.zoom);
@@ -334,23 +335,23 @@ public class GEMFFile {
 				}
 			}
 		}
-		
+
 		//
 		// Write tiles
 		//
-		
+
 		byte[] buf = new byte[FILE_COPY_BUFFER_SIZE];
-		
+
 		long currentOffset = headerSize;
 		int fileIndex = 0;
-		
+
 		for (GEMFRange range: ranges) {
 			for (int x = range.xMin; x < range.xMax + 1; ++x) {
 				for (int y = range.yMin; y < range.yMax + 1; ++y) {
 
 					long fileSize = dirIndex.get(
 							indexSource.get(range.sourceIndex)).get(range.zoom).get(x).get(y).length();
-					
+
 					if (currentOffset + fileSize > FILE_SIZE_LIMIT) {
 						gemfFile.close();
 						++fileIndex;
@@ -359,7 +360,7 @@ public class GEMFFile {
 					} else {
 						currentOffset += fileSize;
 					}
-					
+
 					FileInputStream tile = new FileInputStream(
 							dirIndex.get(
 									indexSource.get(
@@ -377,18 +378,18 @@ public class GEMFFile {
 		}
 
 		gemfFile.close();
-		
+
 		// Complete construction of GEMFFile object
 		openFiles();
 		readHeader();
 	}
-	
-	
+
+
 	// ===========================================================
 	// Private Methods
 	// ===========================================================
-	
-	
+
+
 	/*
 	 * Close open GEMF file handles.
 	 */
@@ -398,17 +399,17 @@ public class GEMFFile {
 		}
 	}
 
-	
+
 	/*
 	 * Find all files composing this GEMF archive, open them as RandomAccessFile
 	 * and add to the mFiles list.
 	 */
 	private void openFiles() throws FileNotFoundException {
 		// Populate the mFiles array
-		
+
 		File base = new File(mLocation);
 		mFiles.add(new RandomAccessFile(base, "r"));
-		
+
 		int i = 0;
 		for(;;) {
 			i = i + 1;
@@ -420,31 +421,32 @@ public class GEMFFile {
 			}
 		}
 	}
-	
-	
+
+
 	/*
 	 * Read header of archive, cache Ranges.
 	 */
+	@SuppressWarnings("boxing")
 	private void readHeader() throws IOException {
 		final RandomAccessFile baseFile = mFiles.get(0);
-		
+
 		// Get file sizes
 		for (RandomAccessFile file : mFiles) {
 			mFileSizes.add(file.length());
 		}
-				
+
 		// Version
 		int version = baseFile.readInt();
 		if (version != VERSION) {
 			throw new IOException("Bad file version: " + version);
 		}
-		
+
 		// Tile Size
 		int tile_size = baseFile.readInt();
 		if (tile_size != TILE_SIZE) {
 			throw new IOException("Bad tile size: " + tile_size);
 		}
-		
+
 		// Read Source List
 		int sourceCount = baseFile.readInt();
 
@@ -453,7 +455,7 @@ public class GEMFFile {
 			int sourceNameLength = baseFile.readInt();
 			byte[] nameData = new byte[sourceNameLength];
 			baseFile.read(nameData, 0, sourceNameLength);
-			
+
 			String sourceName = new String(nameData);
 			mSources.put(new Integer(sourceIndex), sourceName);
 		}
@@ -473,26 +475,26 @@ public class GEMFFile {
 		}
 	}
 
-	
+
 	// ===========================================================
 	// Public Methods
 	// ===========================================================
 
-	
+
 	/*
 	 * Returns the base name of the first file in the GEMF archive.
 	 */
 	public String getName() {
 		return mLocation;
 	}
-	
+
 	/*
 	 * Returns a HashMap of the sources in this archive, as names and indexes.
 	 */
 	public HashMap<Integer, String> getSources() {
 		return mSources;
 	}
-	
+
 	/*
 	 * Set single source for getInputStream() to use. Otherwise, first tile found
 	 * with specified Z/X/Y coordinates will be returned.
@@ -510,7 +512,7 @@ public class GEMFFile {
 	public void acceptAnySource() {
 		mSourceLimited = false;
 	}
-	
+
 	/*
 	 * Return list of zoom levels contained within this archive.
 	 */
@@ -524,12 +526,13 @@ public class GEMFFile {
 		return zoomLevels;
 	}
 
-	
+
 	/*
 	 * Get an InputStream for the tile data specified by the Z/X/Y coordinates.
-	 * 
+	 *
 	 * @return InputStream of tile data, or null if not found.
 	 */
+	@SuppressWarnings("boxing")
 	public InputStream getInputStream(int pX, int pY, int pZ) {
 		GEMFRange range = null;
 
@@ -563,7 +566,7 @@ public class GEMFFile {
 			long offset = (xIndex * numY) + yIndex;
 			offset *= (U32_SIZE + U64_SIZE);
 			offset += range.offset;
-			
+
 
 			// Read tile record from header, get offset and size of data record
 			RandomAccessFile baseFile = mFiles.get(0);
@@ -571,16 +574,16 @@ public class GEMFFile {
 			dataOffset = baseFile.readLong();
 			dataLength = baseFile.readInt();
 
-			
+
 			// Seek to correct data file and offset.
 			RandomAccessFile pDataFile = mFiles.get(0);
 			int index = 0;
 			if (dataOffset > mFileSizes.get(0))	{
 				int fileListCount = mFileSizes.size();
 
-				while ((index < (fileListCount - 1)) && 
+				while ((index < (fileListCount - 1)) &&
 						(dataOffset > mFileSizes.get(index))) {
-					
+
 					dataOffset -= mFileSizes.get(index);
 					index += 1;
 				}
@@ -592,12 +595,12 @@ public class GEMFFile {
 			// Read data block into a byte array
 			dataBuf = new byte[dataLength];
 			pDataFile.seek(dataOffset);
-			
+
 			int read = pDataFile.read(dataBuf, 0, dataLength);
 			while (read < dataLength) {
 				read += pDataFile.read(dataBuf, read, dataLength);
 			}
-			
+
 		} catch (java.io.IOException e) {
 			return null;
 		}
@@ -605,11 +608,11 @@ public class GEMFFile {
 		// Return byte array as InputStream as required by tile provider framework
 		return new ByteArrayInputStream(dataBuf, 0, dataLength);
 	}
-	
+
 	// ===========================================================
 	// Inner and Anonymous Classes
 	// ===========================================================
-	
+
 	// Class to represent a range of stored tiles within the archive.
 	private class GEMFRange	{
 		Integer zoom;

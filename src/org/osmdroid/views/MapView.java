@@ -20,7 +20,6 @@ import org.osmdroid.tileprovider.MapTileProviderBasic;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
-import org.osmdroid.util.constants.GeoConstants;
 import org.osmdroid.views.overlay.Overlay;
 import org.osmdroid.views.overlay.OverlayManager;
 import org.osmdroid.views.overlay.TilesOverlay;
@@ -905,7 +904,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * @author Nicolas Gramlich
 	 * @author Manuel Stahl
 	 */
-	public class Projection implements GeoConstants {
+	public class Projection {
 		private final int mZoomLevelProjection;
 		private final int mTileSizePixelsProjection;
 		private final int mTileMapZoomProjection;

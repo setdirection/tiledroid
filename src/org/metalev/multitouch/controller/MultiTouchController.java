@@ -234,6 +234,7 @@ public class MultiTouchController<T> {
 	private static final int[] pointerIds = new int[MAX_TOUCH_POINTS];
 
 	/** Process incoming touch events */
+	@SuppressWarnings({"boxing", "unused"})
 	public boolean onTouchEvent(MotionEvent event) {
 		try {
 			int pointerCount = multiTouchSupported ? (Integer) m_getPointerCount.invoke(event) : 1;
@@ -464,6 +465,7 @@ public class MultiTouchController<T> {
 		private float[] xs = new float[MAX_TOUCH_POINTS];
 		private float[] ys = new float[MAX_TOUCH_POINTS];
 		private float[] pressures = new float[MAX_TOUCH_POINTS];
+		@SuppressWarnings("hiding")
 		private int[] pointerIds = new int[MAX_TOUCH_POINTS];
 
 		// Midpoint of pinch operations

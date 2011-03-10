@@ -40,11 +40,10 @@ public class SimpleLocationOverlay extends Overlay {
 	// ===========================================================
 
 	public SimpleLocationOverlay(final Context ctx) {
-		this(ctx, new DefaultResourceProxyImpl(ctx));
+		this(new DefaultResourceProxyImpl(ctx));
 	}
 
-	public SimpleLocationOverlay(final Context ctx,
-			final ResourceProxy pResourceProxy) {
+	public SimpleLocationOverlay(final ResourceProxy pResourceProxy) {
 		super(pResourceProxy);
 		this.PERSON_ICON = mResourceProxy.getBitmap(ResourceProxy.bitmap.person);
 	}

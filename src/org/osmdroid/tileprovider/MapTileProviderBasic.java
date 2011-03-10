@@ -16,11 +16,11 @@ import android.content.Context;
  * This top-level tile provider implements a basic tile request chain which includes a
  * {@link MapTileFilesystemProvider} (a file-system cache), a {@link MapTileFileArchiveProvider}
  * (archive provider), and a {@link MapTileDownloader} (downloads map tiles via tile source).
- * 
+ *
  * @author Marc Kurtz
- * 
+ *
  */
-public class MapTileProviderBasic extends MapTileProviderArray implements IMapTileProviderCallback {
+public class MapTileProviderBasic extends MapTileProviderArray {
 
 	// private static final Logger logger = LoggerFactory.getLogger(MapTileProviderBasic.class);
 

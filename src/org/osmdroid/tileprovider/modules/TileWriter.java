@@ -195,7 +195,7 @@ public class TileWriter implements IFilesystemCache, OpenStreetMapTileProviderCo
 				Arrays.sort(files, new Comparator<File>() {
 					@Override
 					public int compare(final File f1, final File f2) {
-						return Long.valueOf(f1.lastModified()).compareTo(f2.lastModified());
+						return (int)(f1.lastModified() - f2.lastModified());
 					}
 				});
 

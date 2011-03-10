@@ -71,7 +71,8 @@ public class ZoomButtonsController {
     if ( controller != null ) {
       try {
         final InvocationHandler handler = new InvocationHandler() {
-          @Override
+          @SuppressWarnings("boxing")
+		@Override
           public Object invoke( Object object, Method method, Object[] args ) {
             logger.info( "invoke: " + method.getName() + " listener: " + listener );
             if ( "onZoom".equals( method.getName() ) ) {
@@ -96,7 +97,8 @@ public class ZoomButtonsController {
     }
   }
 
-  public void setVisible( final boolean visible ) {
+  @SuppressWarnings("boxing")
+public void setVisible( final boolean visible ) {
     if ( controller != null ) {
       try {
         setVisible.invoke( controller, visible );
@@ -107,7 +109,8 @@ public class ZoomButtonsController {
     }
   }
 
-  public void setZoomInEnabled( final boolean enabled ) {
+  @SuppressWarnings("boxing")
+public void setZoomInEnabled( final boolean enabled ) {
     if ( controller != null ) {
       try {
         setZoomInEnabled.invoke( controller, enabled );
@@ -118,7 +121,8 @@ public class ZoomButtonsController {
     }
   }
 
-  public void setZoomOutEnabled( final boolean enabled ) {
+  @SuppressWarnings("boxing")
+public void setZoomOutEnabled( final boolean enabled ) {
     if ( controller != null ) {
       try {
         setZoomOutEnabled.invoke( controller, enabled );

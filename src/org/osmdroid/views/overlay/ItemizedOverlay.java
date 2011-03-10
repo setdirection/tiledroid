@@ -161,6 +161,9 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		})) ? true : super.onSingleTapUp(event, mapView);
 	}
 
+	/**
+	 * @param mapView
+	 */
 	protected boolean onSingleTapUpHelper(final int index, final T item, final MapView mapView) {
 		return this.mOnItemGestureListener.onItemSingleTapUp(index, item);
 	}

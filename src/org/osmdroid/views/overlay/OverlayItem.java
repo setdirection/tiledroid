@@ -108,6 +108,9 @@ public class OverlayItem {
 		return mMarker;
 	}
 
+	/**
+	 * @param stateBitset
+	 */
 	public Point getMarkerHotspot(final int stateBitset) {
 		return (mMarkerHotspot == null) ? null : mMarkerHotspot;
 	}

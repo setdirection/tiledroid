@@ -556,8 +556,7 @@ public class MapController implements MapViewConstants {
 		}
 	}
 
-	protected class QuarterCosinusalDeceleratingAnimationRunner extends
-			CosinusalBasedAnimationRunner implements MathConstants {
+	protected class QuarterCosinusalDeceleratingAnimationRunner extends CosinusalBasedAnimationRunner {
 		// ===========================================================
 		// Constructors
 		// ===========================================================
@@ -574,8 +573,7 @@ public class MapController implements MapViewConstants {
 		}
 	}
 
-	protected class HalfCosinusalDeceleratingAnimationRunner extends CosinusalBasedAnimationRunner
-			implements MathConstants {
+	protected class HalfCosinusalDeceleratingAnimationRunner extends CosinusalBasedAnimationRunner {
 		// ===========================================================
 		// Constructors
 		// ===========================================================
@@ -592,8 +590,7 @@ public class MapController implements MapViewConstants {
 		}
 	}
 
-	protected class MiddlePeakSpeedAnimationRunner extends CosinusalBasedAnimationRunner implements
-			MathConstants {
+	protected class MiddlePeakSpeedAnimationRunner extends CosinusalBasedAnimationRunner {
 		// ===========================================================
 		// Constructors
 		// ===========================================================
