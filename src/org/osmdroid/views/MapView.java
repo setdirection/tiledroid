@@ -84,8 +84,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	private final ScaleAnimation mZoomOutAnimation;
 	private final MyAnimationListener mAnimationListener = new MyAnimationListener();
 
-	// XXX we can use android.widget.ZoomButtonsController if we upgrade the
-	// dependency to Android 1.6
 	private final ZoomButtonsController mZoomController;
 	private boolean mEnableZoomController = false;
 
@@ -103,7 +101,9 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	private final Handler mTileRequestCompleteHandler;
 
 	/* a point that will be reused to design added views */
-	private final Point mPoint = new Point();
+	private final ZoomCoord mPoint = new ZoomCoord();
+
+	private final WorldCoord mCenter = new WorldCoord();
 
 	// ===========================================================
 	// Constructors
@@ -235,16 +235,14 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		return mProjection;
 	}
 
-	void setMapCenter(final Point aCenter, final boolean jump) {
-		this.setMapCenter(aCenter.x, aCenter.y, jump);
-	}
-
-	void setMapCenter(final int x, final int y, final boolean jump) {
-		final int worldSize_2 = getWorldSizePx() / 2;
+	void setMapCenter(final WorldCoord worldCenter, final boolean jump) {
 		if (getAnimation() == null || getAnimation().hasEnded()) {
+			mCenter.set(worldCenter.x, worldCenter.y);
+
+			final ViewportCoord curZoom = mProjection.toViewport(worldCenter, null);
 			logger.debug("StartScroll");
 			mScroller.startScroll(getScrollX(), getScrollY(),
-					x - worldSize_2 - getScrollX(), y - worldSize_2 - getScrollY(),
+					curZoom.x - getScrollX(), curZoom.y - getScrollY(),
 					jump ? 0 : 500);
 			postInvalidate();
 		}
@@ -273,21 +271,22 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		final int newZoomLevel = Math.max(minZoomLevel, Math.min(maxZoomLevel, aZoomLevel));
 		final int curZoomLevel = this.mZoomLevel;
 
+		final WorldCoord center = getMapCenter();
+
 		this.mZoomLevel = newZoomLevel;
 		this.checkZoomButtons();
 
-		if (newZoomLevel > curZoomLevel) {
-			scrollTo(getScrollX() << newZoomLevel - curZoomLevel, getScrollY() << newZoomLevel
-					- curZoomLevel);
-		} else if (newZoomLevel < curZoomLevel) {
-			scrollTo(getScrollX() >> curZoomLevel - newZoomLevel, getScrollY() >> curZoomLevel
-					- newZoomLevel);
-		}
-
 		// snap for all snappables
 		final Point snapPoint = new Point();
-		// XXX why do we need a new projection here?
-		mProjection = new Projection();
+		if (curZoomLevel != newZoomLevel) {
+			// XXX why do we need a new projection here?
+			mProjection = new Projection();
+
+			// Update the center location for the new zoom
+			ViewportCoord viewCenter = mProjection.toViewport(center, null);
+			scrollTo(viewCenter.x + getScrollX(), viewCenter.y + getScrollY());
+		}
+
 		if (mOverlayManager.onSnapToItem(getScrollX(), getScrollY(), snapPoint, this)) {
 			scrollTo(snapPoint.x, snapPoint.y);
 		}
@@ -386,13 +385,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		}
 	}
 
-	boolean zoomInFixing(final Point point) {
+	public boolean zoomInFixing(final WorldCoord point) {
 		setMapCenter(point, false); // TODO should fix on point, not center on it
-		return zoomIn();
-	}
-
-	boolean zoomInFixing(final int xPixel, final int yPixel) {
-		setMapCenter(xPixel, yPixel, false); // TODO should fix on point, not center on it
 		return zoomIn();
 	}
 
@@ -416,18 +410,13 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		}
 	}
 
-	boolean zoomOutFixing(final Point point) {
+	boolean zoomOutFixing(final WorldCoord point) {
 		setMapCenter(point, false); // TODO should fix on point, not center on it
 		return zoomOut();
 	}
 
-	boolean zoomOutFixing(final int xPixel, final int yPixel) {
-		setMapCenter(xPixel, yPixel, false); // TODO should fix on point, not center on it
-		return zoomOut();
-	}
-
-	public Point getMapCenter() {
-		return mProjection.toCurrentZoom(getScrollX(), getScrollY(), null);
+	public WorldCoord getMapCenter() {
+		return mCenter;
 	}
 
 	public ResourceProxy getResourceProxy() {
@@ -898,6 +887,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * @author Manuel Stahl
 	 */
 	public class Projection {
+		private final int mWorldSize_2 = getWorldSizePx() / 2;
+		private final int mZoomDelta = getMaxZoomLevel() - mZoomLevel;
 		private final int mZoomLevelProjection;
 		private final int mTileSizePixelsProjection;
 		private final int mTileMapZoomProjection;
@@ -925,13 +916,10 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			return mZoomLevelProjection;
 		}
 
-		public Point toCurrentZoom(final Point worldCoords, final Point reuse) {
-			return toCurrentZoom(worldCoords.x, worldCoords.y, reuse);
-		}
-		public Point toCurrentZoom(final int worldX, final int worldY, final Point reuse) {
-			final Point out = reuse != null ? reuse : new Point();
+		public ZoomCoord toCurrentZoom(final WorldCoord worldCoords, final ZoomCoord reuse) {
+			final ZoomCoord out = reuse != null ? reuse : new ZoomCoord();
 
-			out.set(worldX >> mZoomLevel, worldY >> mZoomLevel);
+			out.set((worldCoords.x >> mZoomDelta), (worldCoords.y >> mZoomDelta));
 			return out;
 		}
 
@@ -939,18 +927,35 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			final Rect out = reuse != null ? reuse : new Rect();
 
 			out.set(
-					curCoords.left << mZoomLevel, curCoords.top << mZoomLevel,
-					curCoords.right << mZoomLevel, curCoords.bottom << mZoomLevel);
+					(curCoords.left << mZoomDelta), (curCoords.top << mZoomDelta),
+					(curCoords.right << mZoomDelta), (curCoords.bottom << mZoomDelta));
 			return out;
 		}
-		public Point fromCurrentZoom(final Point curCoords, final Point reuse) {
+		public WorldCoord fromCurrentZoom(final ZoomCoord curCoords, final WorldCoord reuse) {
 			return fromCurrentZoom(curCoords.x, curCoords.y, reuse);
 		}
-		public Point fromCurrentZoom(final int curX, final int curY, final Point reuse) {
-			final Point out = reuse != null ? reuse : new Point();
+		private WorldCoord fromCurrentZoom(final int curX, final int curY, final WorldCoord reuse) {
+			final WorldCoord out = reuse != null ? reuse : new WorldCoord();
 
-			out.set(curX << mZoomLevel, curY << mZoomLevel);
+			out.set(curX << mZoomDelta, curY << mZoomDelta);
 			return out;
+		}
+
+		public ViewportCoord toViewport(final WorldCoord worldCoord, final ViewportCoord reuse) {
+			final ViewportCoord out = reuse != null ? reuse : new ViewportCoord();
+			final ZoomCoord zoomCoord = toCurrentZoom(worldCoord, null);
+
+			// In inverse of the -getX()/2 is done when rendering rather than here. Makes it fun that way.
+			out.set(
+					zoomCoord.x - getScrollX() - mWorldSize_2,
+					zoomCoord.y - getScrollY() - mWorldSize_2);
+			return out;
+		}
+		public WorldCoord fromViewport(final ViewportCoord viewportCord, final WorldCoord reuse) {
+			return getProjection().fromCurrentZoom(
+					viewportCord.x + getScrollX() + mWorldSize_2 - getWidth()/2,
+					viewportCord.y + getScrollY() + mWorldSize_2 - getHeight()/2,
+					reuse);
 		}
 	}
 
@@ -1018,8 +1023,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return true;
 			}
 
-			final Point center = getProjection().fromCurrentZoom((int)e.getX(), (int)e.getY(), null);
-			return zoomInFixing(center.x, center.y);
+			final WorldCoord center = getProjection().fromViewport(new ViewportCoord((int)e.getX(), (int)e.getY()), null);
+			return zoomInFixing(center);
 		}
 
 		@Override
@@ -1045,9 +1050,9 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		@Override
 		public void onZoom(final boolean zoomIn) {
 			if (zoomIn) {
-				getController().zoomIn();
+				zoomIn();
 			} else {
-				getController().zoomOut();
+				zoomOut();
 			}
 		}
 
@@ -1129,7 +1134,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		/**
 		 * The location of the child within the map view.
 		 */
-		public Point geoPoint;
+		public WorldCoord geoPoint;
 
 		/**
 		 * The alignment the alignment of the view compared to the location.
@@ -1152,12 +1157,12 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		 *            {@link #BOTTOM_LEFT}, {@link #BOTTOM_RIGHT} {@link #TOP_CENTER},
 		 *            {@link #TOP_LEFT}, {@link #TOP_RIGHT}
 		 */
-		public LayoutParams(int width, int height, Point geoPoint, int alignment) {
+		public LayoutParams(int width, int height, WorldCoord geoPoint, int alignment) {
 			super(width, height);
 			if (geoPoint != null)
 				this.geoPoint = geoPoint;
 			else
-				this.geoPoint = new Point(0, 0);
+				this.geoPoint = new WorldCoord(0, 0);
 			this.alignment = alignment;
 		}
 
@@ -1173,7 +1178,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		 */
 		public LayoutParams(Context c, AttributeSet attrs) {
 			super(c, attrs);
-			this.geoPoint = new Point(0, 0);
+			this.geoPoint = new WorldCoord(0, 0);
 			this.alignment = BOTTOM_CENTER;
 		}
 
@@ -1185,4 +1190,16 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		}
 	}
 
+	public static class WorldCoord extends Point {
+		public WorldCoord() { super(); }
+		public WorldCoord(int x, int y) { super(x, y); }
+	}
+	public static class ZoomCoord extends Point {
+		public ZoomCoord() { super(); }
+		public ZoomCoord(int x, int y) { super(x, y); }
+	}
+	public static class ViewportCoord extends Point {
+		public ViewportCoord() { super(); }
+		public ViewportCoord(int x, int y) { super(x, y); }
+	}
 }

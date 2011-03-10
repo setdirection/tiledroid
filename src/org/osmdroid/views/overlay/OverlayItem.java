@@ -2,6 +2,7 @@
 package org.osmdroid.views.overlay;
 
 import org.osmdroid.ResourceProxy;
+import org.osmdroid.views.MapView.WorldCoord;
 
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
@@ -38,7 +39,7 @@ public class OverlayItem {
 	public final long mKey;
 	public final String mTitle;
 	public final String mDescription;
-	public final Point mPoint;
+	public final WorldCoord mPoint;
 	protected Drawable mMarker;
 	protected Point mMarkerHotspot;
 	protected HotspotPlace mStdHotspotPlace;
@@ -54,11 +55,11 @@ public class OverlayItem {
 	 *            a <b>multiLine</b> description ( <code>'\n'</code> possible)
 	 * @param aPoint
 	 */
-	public OverlayItem(final String aTitle, final String aDescription, final Point aPoint) {
+	public OverlayItem(final String aTitle, final String aDescription, final WorldCoord aPoint) {
 		this(-1L, aTitle, aDescription, aPoint);
 	}
 
-	public OverlayItem(final long aKey, final String aTitle, final String aDescription, final Point aPoint) {
+	public OverlayItem(final long aKey, final String aTitle, final String aDescription, final WorldCoord aPoint) {
 		this.mTitle = aTitle;
 		this.mDescription = aDescription;
 		this.mPoint = aPoint;
@@ -163,7 +164,7 @@ public class OverlayItem {
 	 */
 	public static OverlayItem getDefaultItem(final Drawable pMarker, final Point pHotspot,
 			final HotspotPlace pHotspotPlace, final ResourceProxy pResourceProxy) {
-		final OverlayItem that = new OverlayItem("<default>", "used when no marker is specified", new Point(0, 0));
+		final OverlayItem that = new OverlayItem("<default>", "used when no marker is specified", new WorldCoord(0, 0));
 		that.mMarker = (pMarker != null) ? pMarker : pResourceProxy
 				.getDrawable(ResourceProxy.bitmap.marker_default);
 

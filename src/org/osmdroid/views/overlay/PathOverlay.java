@@ -6,6 +6,8 @@ import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
+import org.osmdroid.views.MapView.WorldCoord;
+import org.osmdroid.views.MapView.ZoomCoord;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -32,7 +34,7 @@ public class PathOverlay extends Overlay {
 	/**
 	 * Stores points, converted to the map projection.
 	 */
-	private ArrayList<Point> mPoints;
+	private ArrayList<WorldCoord> mPoints;
 
 	/**
 	 * Paint settings.
@@ -41,8 +43,8 @@ public class PathOverlay extends Overlay {
 
 	private final Path mPath = new Path();
 
-	private final Point mTempPoint1 = new Point();
-	private final Point mTempPoint2 = new Point();
+	private final ZoomCoord mTempPoint1 = new ZoomCoord();
+	private final ZoomCoord mTempPoint2 = new ZoomCoord();
 
 	// bounding rectangle for the current line segment.
 	private final Rect mLineBounds = new Rect();
@@ -87,7 +89,7 @@ public class PathOverlay extends Overlay {
 	}
 
 	public void clearPath() {
-		this.mPoints = new ArrayList<Point>();
+		this.mPoints = new ArrayList<WorldCoord>();
 	}
 
 	public void addPoint(final Point pt) {
@@ -95,7 +97,7 @@ public class PathOverlay extends Overlay {
 	}
 
 	public void addPoint(final int x, final int y) {
-		this.mPoints.add(new Point(x, y));
+		this.mPoints.add(new WorldCoord(x, y));
 	}
 
 	public int getNumberOfPoints() {
@@ -123,10 +125,10 @@ public class PathOverlay extends Overlay {
 		// precompute new points to the intermediate projection.
 		final int size = this.mPoints.size();
 
-		Point screenPoint0 = null; // points on screen
-		Point screenPoint1 = null;
-		Point projectedPoint0; // points from the points list
-		Point projectedPoint1;
+		ZoomCoord screenPoint0 = null; // points on screen
+		ZoomCoord screenPoint1 = null;
+		WorldCoord projectedPoint0; // points from the points list
+		WorldCoord projectedPoint1;
 
 		// clipping rectangle in the intermediate projection, to avoid performing projection.
 		final Rect clipBounds = pj.fromCurrentZoom(canvas.getClipBounds(), null);

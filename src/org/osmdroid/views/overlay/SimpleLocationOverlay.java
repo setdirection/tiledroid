@@ -5,12 +5,13 @@ import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
+import org.osmdroid.views.MapView.WorldCoord;
+import org.osmdroid.views.MapView.ZoomCoord;
 
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Point;
 
 /**
  *
@@ -32,8 +33,8 @@ public class SimpleLocationOverlay extends Overlay {
 	/** Coordinates the feet of the person are located. */
 	protected final android.graphics.Point PERSON_HOTSPOT = new android.graphics.Point(24, 39);
 
-	protected Point mLocation;
-	private final Point screenCoords = new Point();
+	protected WorldCoord mLocation;
+	private final ZoomCoord screenCoords = new ZoomCoord();
 
 	// ===========================================================
 	// Constructors
@@ -52,11 +53,11 @@ public class SimpleLocationOverlay extends Overlay {
 	// Getter & Setter
 	// ===========================================================
 
-	public void setLocation(final Point mp) {
+	public void setLocation(final WorldCoord mp) {
 		this.mLocation = mp;
 	}
 
-	public Point getMyLocation() {
+	public WorldCoord getMyLocation() {
 		return this.mLocation;
 	}
 

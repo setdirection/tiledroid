@@ -7,6 +7,9 @@ import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
+import org.osmdroid.views.MapView.ViewportCoord;
+import org.osmdroid.views.MapView.WorldCoord;
+import org.osmdroid.views.MapView.ZoomCoord;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -119,7 +122,7 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		}
 
 		final Projection pj = mapView.getProjection();
-		final Point curScreenCoords = new Point();
+		final ZoomCoord curScreenCoords = new ZoomCoord();
 		int limit = this.mItemList.size() - 1;
 		if (limit > this.mDrawnItemsLimit) {
 			limit = this.mDrawnItemsLimit;
@@ -236,17 +239,16 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 	private boolean activateSelectedItems(final MotionEvent event, final MapView mapView,
 			final ActiveItem task) {
 		final Projection pj = mapView.getProjection();
-		final int eventX = (int) event.getX();
-		final int eventY = (int) event.getY();
+		final ViewportCoord coord = new ViewportCoord((int) event.getX(), (int) event.getY());
 
 		/* These objects are created to avoid construct new ones every cycle. */
-		final Point touchScreenCoords = new Point();
-		pj.fromCurrentZoom(eventX, eventY, touchScreenCoords);
+		// TODO : Is this doing what we want it to? Verify (Consider the distinction between canvas viewport and view viewport)
+		final WorldCoord touchScreenCoords = pj.fromViewport(coord, null);
 
 		touchPoint = touchScreenCoords;
 
 		final Rect markerScreenBounds = new Rect();
-		final Point curScreenCoords = new Point();
+		final ZoomCoord curScreenCoords = new ZoomCoord();
 		for (int i = 0; i < this.mItemList.size(); ++i) {
 			final T item = this.mItemList.get(i);
 			pj.toCurrentZoom(item.mPoint, curScreenCoords);
