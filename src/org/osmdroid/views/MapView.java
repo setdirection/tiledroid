@@ -84,8 +84,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	private final ScaleAnimation mZoomOutAnimation;
 	private final MyAnimationListener mAnimationListener = new MyAnimationListener();
 
-	private final MapController mController;
-
 	// XXX we can use android.widget.ZoomButtonsController if we upgrade the
 	// dependency to Android 1.6
 	private final ZoomButtonsController mZoomController;
@@ -116,7 +114,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			final Handler tileRequestCompleteHandler, final AttributeSet attrs) {
 		super(context, attrs);
 		mResourceProxy = resourceProxy;
-		this.mController = new MapController(this);
 		this.mScroller = new Scroller(context);
 		this.mTileSizePixels = tileSizePixels;
 		if (Math.pow(2, getMapTileZoom(this.mTileSizePixels)) != this.mTileSizePixels) {
@@ -186,9 +183,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	// ===========================================================
 	// Getter & Setter
 	// ===========================================================
-	public MapController getController() {
-		return this.mController;
-	}
 
 	/**
 	 * You can add/remove/reorder your Overlays using the List of {@link Overlay}. The first (index
