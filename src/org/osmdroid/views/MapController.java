@@ -1,8 +1,6 @@
 // Created by plusminus on 21:37:08 - 27.09.2008
 package org.osmdroid.views;
 
-import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.api.IMapController;
 import org.osmdroid.util.BoundingBoxE6;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.util.Mercator;
@@ -16,7 +14,7 @@ import android.graphics.Point;
  *
  * @author Nicolas Gramlich
  */
-public class MapController implements IMapController, MapViewConstants {
+public class MapController implements MapViewConstants {
 
 	// ===========================================================
 	// Constants
@@ -54,7 +52,6 @@ public class MapController implements IMapController, MapViewConstants {
 	}
 
 	// TODO rework zoomToSpan
-	@Override
 	public void zoomToSpan(final int reqLatSpan, final int reqLonSpan) {
 		if (reqLatSpan <= 0 || reqLonSpan <= 0) {
 			return;
@@ -82,8 +79,7 @@ public class MapController implements IMapController, MapViewConstants {
 	/**
 	 * Start animating the map towards the given point.
 	 */
-	@Override
-	public void animateTo(final IGeoPoint point) {
+	public void animateTo(final GeoPoint point) {
 		final int x = mOsmv.getScrollX();
 		final int y = mOsmv.getScrollY();
 		final Point p = Mercator.projectGeoPoint(point, this.mOsmv.getPixelZoomLevel(), null);
@@ -94,7 +90,7 @@ public class MapController implements IMapController, MapViewConstants {
 	}
 
 	/**
-	 * Animates the underlying {@link MapView} that it centers the passed {@link GeoPoint} in the
+	 * Animates the underlying {@link MapView} that it centers the passed {@link Point} in the
 	 * end. Uses: {@link MapController.ANIMATION_SMOOTHNESS_DEFAULT} and
 	 * {@link MapController.ANIMATION_DURATION_DEFAULT}.
 	 *
@@ -106,11 +102,11 @@ public class MapController implements IMapController, MapViewConstants {
 	}
 
 	/**
-	 * Animates the underlying {@link MapView} that it centers the passed {@link GeoPoint} in the
+	 * Animates the underlying {@link MapView} that it centers the passed {@link Point} in the
 	 * end.
 	 *
 	 * @param gp
-	 *            GeoPoint to be centered in the end.
+	 *            Point to be centered in the end.
 	 * @param aSmoothness
 	 *            steps made during animation. I.e.: {@link MapController.ANIMATION_SMOOTHNESS_LOW},
 	 *            {@link MapController.ANIMATION_SMOOTHNESS_DEFAULT},
@@ -190,8 +186,7 @@ public class MapController implements IMapController, MapViewConstants {
 	/**
 	 * Set the map view to the given center. There will be no animation.
 	 */
-	@Override
-	public void setCenter(final IGeoPoint point) {
+	public void setCenter(final GeoPoint point) {
 		final Point p = Mercator.projectGeoPoint(point, this.mOsmv.getPixelZoomLevel(), null);
 		final int worldSize_2 = this.mOsmv.getWorldSizePx() / 2;
 		this.mOsmv.scrollTo(p.x - worldSize_2, p.y - worldSize_2);
@@ -214,7 +209,6 @@ public class MapController implements IMapController, MapViewConstants {
 		}
 	}
 
-	@Override
 	public int setZoom(final int zoomlevel) {
 		return mOsmv.setZoomLevel(zoomlevel);
 	}
@@ -222,7 +216,6 @@ public class MapController implements IMapController, MapViewConstants {
 	/**
 	 * Zoom in by one zoom level.
 	 */
-	@Override
 	public boolean zoomIn() {
 		return mOsmv.zoomIn();
 	}
@@ -231,7 +224,6 @@ public class MapController implements IMapController, MapViewConstants {
 		return mOsmv.zoomInFixing(point);
 	}
 
-	@Override
 	public boolean zoomInFixing(final int xPixel, final int yPixel) {
 		return mOsmv.zoomInFixing(xPixel, yPixel);
 	}
@@ -239,7 +231,6 @@ public class MapController implements IMapController, MapViewConstants {
 	/**
 	 * Zoom out by one zoom level.
 	 */
-	@Override
 	public boolean zoomOut() {
 		return mOsmv.zoomOut();
 	}
@@ -248,7 +239,6 @@ public class MapController implements IMapController, MapViewConstants {
 		return mOsmv.zoomOutFixing(point);
 	}
 
-	@Override
 	public boolean zoomOutFixing(final int xPixel, final int yPixel) {
 		return mOsmv.zoomOutFixing(xPixel, yPixel);
 	}

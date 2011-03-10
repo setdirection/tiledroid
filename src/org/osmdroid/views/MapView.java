@@ -12,8 +12,6 @@ import org.metalev.multitouch.controller.MultiTouchController.PointInfo;
 import org.metalev.multitouch.controller.MultiTouchController.PositionAndScale;
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
-import org.osmdroid.api.IMapView;
-import org.osmdroid.api.IProjection;
 import org.osmdroid.events.MapListener;
 import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
@@ -53,7 +51,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 import android.widget.Scroller;
 
-public class MapView extends ViewGroup implements IMapView, MapViewConstants,
+public class MapView extends ViewGroup implements MapViewConstants,
 		MultiTouchObjectCanvas<Object> {
 
 	// ===========================================================
@@ -194,8 +192,6 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 	// ===========================================================
 	// Getter & Setter
 	// ===========================================================
-
-	@Override
 	public MapController getController() {
 		return this.mController;
 	}
@@ -224,12 +220,10 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 		return mTileRequestCompleteHandler;
 	}
 
-	@Override
 	public int getLatitudeSpan() {
 		return this.getBoundingBox().getLatitudeSpanE6();
 	}
 
-	@Override
 	public int getLongitudeSpan() {
 		return this.getBoundingBox().getLongitudeSpanE6();
 	}
@@ -270,7 +264,6 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 	 *
 	 * @return
 	 */
-	@Override
 	public Projection getProjection() {
 		if (mProjection == null) {
 			mProjection = new Projection();
@@ -351,7 +344,6 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 	 * @return the current ZoomLevel between 0 (equator) and 18/19(closest), depending on the tile
 	 *         source chosen.
 	 */
-	@Override
 	public int getZoomLevel() {
 		return getZoomLevel(true);
 	}
@@ -386,7 +378,6 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 	 *
 	 * @return The maximum zoom level for the map's current center.
 	 */
-	@Override
 	public int getMaxZoomLevel() {
 		return mOverlayManager.getTilesOverlay().getMaximumZoomLevel();
 	}
@@ -473,7 +464,6 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 		return zoomOut();
 	}
 
-	@Override
 	public GeoPoint getMapCenter() {
 		return new GeoPoint(getMapCenterLatitudeE6(), getMapCenterLongitudeE6());
 	}
@@ -987,7 +977,8 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 	 * @author Nicolas Gramlich
 	 * @author Manuel Stahl
 	 */
-	public class Projection implements IProjection, GeoConstants {
+
+	public class Projection implements GeoConstants {
 
 		private final int viewWidth_2 = getWidth() / 2;
 		private final int viewHeight_2 = getHeight() / 2;
@@ -1203,17 +1194,14 @@ public class MapView extends ViewGroup implements IMapView, MapViewConstants,
 			return rect;
 		}
 
-		@Override
 		public float metersToEquatorPixels(final float meters) {
 			return meters / EQUATORCIRCUMFENCE * getWorldSizePx();
 		}
 
-		@Override
 		public Point toPixels(final GeoPoint in, final Point out) {
 			return toMapPixels(in, out);
 		}
 
-		@Override
 		public GeoPoint fromPixels(final int x, final int y) {
 			return fromPixels((float) x, (float) y);
 		}

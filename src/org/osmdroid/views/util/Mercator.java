@@ -1,7 +1,6 @@
 // Created by plusminus on 17:53:07 - 25.09.2008
 package org.osmdroid.views.util;
 
-import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.BoundingBoxE6;
 import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.util.constants.MapViewConstants;
@@ -11,9 +10,9 @@ import android.graphics.Point;
 /**
  * http://wiki.openstreetmap.org/index.php/Mercator
  * http://developers.cloudmade.com/projects/tiles/examples/convert-coordinates-to-tile-numbers
- * 
+ *
  * @author Nicolas Gramlich
- * 
+ *
  */
 public class Mercator implements MapViewConstants {
 	// ===========================================================
@@ -50,7 +49,7 @@ public class Mercator implements MapViewConstants {
 
 	/**
 	 * Mercator projection of GeoPoint at given zoom level
-	 * 
+	 *
 	 * @param aLat
 	 *            latitude in degrees [-89000000 to 89000000]
 	 * @param aLon
@@ -67,14 +66,14 @@ public class Mercator implements MapViewConstants {
 
 	/**
 	 * Mercator projection of GeoPoint at given zoom level
-	 * 
+	 *
 	 * @param pGeoPoint
 	 * @param zoom
 	 *            zoom level
 	 * @param pUseAsReturnValue
 	 * @return Point with x,y in the range [-2^(zoom-1) to 2^(zoom-1)]
 	 */
-	public static Point projectGeoPoint(final IGeoPoint pGeoPoint, final int pZoom,
+	public static Point projectGeoPoint(final GeoPoint pGeoPoint, final int pZoom,
 			final Point pUseAsReturnValue) {
 		return projectGeoPoint(pGeoPoint.getLatitudeE6() * 1E-6, pGeoPoint.getLongitudeE6() * 1E-6,
 				pZoom, pUseAsReturnValue);
@@ -82,7 +81,7 @@ public class Mercator implements MapViewConstants {
 
 	/**
 	 * Mercator projection of GeoPoint at given zoom level
-	 * 
+	 *
 	 * @param aLat
 	 *            latitude in degrees [-89 to 89]
 	 * @param aLon
@@ -107,7 +106,7 @@ public class Mercator implements MapViewConstants {
 
 	/**
 	 * Get bounding box from reverse Mercator projection.
-	 * 
+	 *
 	 * @param left
 	 * @param top
 	 * @param right
@@ -123,7 +122,7 @@ public class Mercator implements MapViewConstants {
 
 	/**
 	 * Get bounding box from reverse Mercator projection.
-	 * 
+	 *
 	 * @param aMapTile
 	 * @param aZoom
 	 * @return
@@ -136,7 +135,7 @@ public class Mercator implements MapViewConstants {
 
 	/**
 	 * Reverse Mercator projection of Point at given zoom level
-	 * 
+	 *
 	 */
 	public static GeoPoint projectPoint(final int x, final int y, final int aZoom) {
 		return new GeoPoint((int) (tile2lat(y, aZoom) * 1E6), (int) (tile2lon(x, aZoom) * 1E6));

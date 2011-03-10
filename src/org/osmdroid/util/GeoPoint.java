@@ -3,7 +3,6 @@ package org.osmdroid.util;
 
 import java.io.Serializable;
 
-import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.util.constants.GeoConstants;
 import org.osmdroid.views.util.constants.MathConstants;
 
@@ -17,7 +16,7 @@ import android.os.Parcelable;
  * @author Theodore Hong
  *
  */
-public class GeoPoint implements IGeoPoint, MathConstants, GeoConstants, Parcelable, Serializable, Cloneable {
+public class GeoPoint implements MathConstants, GeoConstants, Parcelable, Serializable, Cloneable {
 
 	// ===========================================================
 	// Constants
@@ -123,12 +122,10 @@ public class GeoPoint implements IGeoPoint, MathConstants, GeoConstants, Parcela
 	// Getter & Setter
 	// ===========================================================
 
-	@Override
 	public int getLongitudeE6() {
 		return this.mLongitudeE6;
 	}
 
-	@Override
 	public int getLatitudeE6() {
 		return this.mLatitudeE6;
 	}
@@ -183,7 +180,7 @@ public class GeoPoint implements IGeoPoint, MathConstants, GeoConstants, Parcela
 		final GeoPoint rhs = (GeoPoint) obj;
 		return rhs.mLatitudeE6 == this.mLatitudeE6 && rhs.mLongitudeE6 == this.mLongitudeE6 && rhs.mAltitude == this.mAltitude;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		return 37 * (17 * mLatitudeE6 + mLongitudeE6) + mAltitude;
