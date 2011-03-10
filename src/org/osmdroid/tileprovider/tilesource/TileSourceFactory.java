@@ -76,25 +76,6 @@ public class TileSourceFactory {
 	public static final OnlineTileSourceBase HILLS = new XYTileSource("Hills",
 			ResourceProxy.string.hills, 8, 17, 256, ".png", "http://topo.geofabrik.de/hills/");
 
-	public static final OnlineTileSourceBase CLOUDMADESTANDARDTILES = new CloudmadeTileSource(
-			"CloudMadeStandardTiles", ResourceProxy.string.cloudmade_standard, 0, 18, 256, ".png",
-			"http://a.tile.cloudmade.com/%s/%d/%d/%d/%d/%d%s?token=%s",
-			"http://b.tile.cloudmade.com/%s/%d/%d/%d/%d/%d%s?token=%s",
-			"http://c.tile.cloudmade.com/%s/%d/%d/%d/%d/%d%s?token=%s");
-
-	// FYI - This tile source has a tileSize of "6"
-	public static final OnlineTileSourceBase CLOUDMADESMALLTILES = new CloudmadeTileSource(
-			"CloudMadeSmallTiles", ResourceProxy.string.cloudmade_small, 0, 21, 64, ".png",
-			"http://a.tile.cloudmade.com/%s/%d/%d/%d/%d/%d%s?token=%s",
-			"http://b.tile.cloudmade.com/%s/%d/%d/%d/%d/%d%s?token=%s",
-			"http://c.tile.cloudmade.com/%s/%d/%d/%d/%d/%d%s?token=%s");
-
-	public static final OnlineTileSourceBase MAPQUESTOSM =
-		new XYTileSource("MapquestOSM", ResourceProxy.string.mapquest_osm, 0, 18, 256, ".png",
-				"http://otile1.mqcdn.com/tiles/1.0.0/osm/",
-				"http://otile2.mqcdn.com/tiles/1.0.0/osm/",
-				"http://otile3.mqcdn.com/tiles/1.0.0/osm/",
-				"http://otile4.mqcdn.com/tiles/1.0.0/osm/");
 
 	public static final OnlineTileSourceBase DEFAULT_TILE_SOURCE = MAPNIK;
 
@@ -123,8 +104,5 @@ public class TileSourceFactory {
 		mTileSources.add(BASE);
 		mTileSources.add(TOPO);
 		mTileSources.add(HILLS);
-		mTileSources.add(CLOUDMADESTANDARDTILES);
-		mTileSources.add(CLOUDMADESMALLTILES);
-		mTileSources.add(MAPQUESTOSM);
 	}
 }
