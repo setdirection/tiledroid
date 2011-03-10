@@ -3,9 +3,6 @@ package org.osmdroid.views;
 
 import java.util.List;
 
-import net.wigle.wigleandroid.ZoomButtonsController;
-import net.wigle.wigleandroid.ZoomButtonsController.OnZoomListener;
-
 import org.metalev.multitouch.controller.MultiTouchController;
 import org.metalev.multitouch.controller.MultiTouchController.MultiTouchObjectCanvas;
 import org.metalev.multitouch.controller.MultiTouchController.PointInfo;
@@ -45,6 +42,8 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 import android.widget.Scroller;
+import android.widget.ZoomButtonsController;
+import android.widget.ZoomButtonsController.OnZoomListener;
 
 public class MapView extends ViewGroup implements MapViewConstants,
 		MultiTouchObjectCanvas<Object> {
