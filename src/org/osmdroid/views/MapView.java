@@ -17,7 +17,6 @@ import org.osmdroid.events.ScrollEvent;
 import org.osmdroid.events.ZoomEvent;
 import org.osmdroid.tileprovider.MapTileProviderBase;
 import org.osmdroid.tileprovider.MapTileProviderBasic;
-import org.osmdroid.tileprovider.tilesource.IStyledTileSource;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.util.SimpleInvalidationHandler;
@@ -888,20 +887,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				} catch (final IllegalArgumentException e) {
 					logger.warn("Invalid tile souce specified in layout attributes: " + tileSource);
 				}
-			}
-		}
-
-		if (aAttributeSet != null && tileSource instanceof IStyledTileSource) {
-			String style = aAttributeSet.getAttributeValue(null, "style");
-			if (style == null) {
-				// historic - old attribute name
-				style = aAttributeSet.getAttributeValue(null, "cloudmadeStyle");
-			}
-			if (style == null) {
-				logger.info("Using default style: 1");
-			} else {
-				logger.info("Using style specified in layout attributes: " + style);
-				((IStyledTileSource<?>) tileSource).setStyle(style);
 			}
 		}
 
