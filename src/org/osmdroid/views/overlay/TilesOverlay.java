@@ -109,11 +109,6 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 	@Override
 	protected void draw(final Canvas c, final MapView osmv, final boolean shadow) {
-
-		if (DEBUGMODE) {
-			logger.trace("onDraw(" + shadow + ")");
-		}
-
 		if (shadow) {
 			return;
 		}
@@ -191,7 +186,6 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 		// draw a cross at center in debug mode
 		if (DEBUGMODE) {
-			// final GeoPoint center = osmv.getMapCenter();
 			final Point centerPoint = new Point(viewPort.centerX() - mWorldSize_2,
 					viewPort.centerY() - mWorldSize_2);
 			c.drawLine(centerPoint.x, centerPoint.y - 9, centerPoint.x, centerPoint.y + 9, mPaint);
