@@ -4,7 +4,6 @@ import java.util.ArrayList;
 
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
 
@@ -16,9 +15,9 @@ import android.graphics.Point;
 import android.graphics.Rect;
 
 /**
- * 
+ *
  * @author Viesturs Zarins
- * 
+ *
  *         This class draws a path line in given color.
  */
 public class PathOverlay extends Overlay {
@@ -34,11 +33,6 @@ public class PathOverlay extends Overlay {
 	 * Stores points, converted to the map projection.
 	 */
 	private ArrayList<Point> mPoints;
-
-	/**
-	 * Number of points that have precomputed values.
-	 */
-	private int mPointsPrecomputed;
 
 	/**
 	 * Paint settings.
@@ -94,15 +88,14 @@ public class PathOverlay extends Overlay {
 
 	public void clearPath() {
 		this.mPoints = new ArrayList<Point>();
-		this.mPointsPrecomputed = 0;
 	}
 
-	public void addPoint(final GeoPoint pt) {
-		this.addPoint(pt.getLatitudeE6(), pt.getLongitudeE6());
+	public void addPoint(final Point pt) {
+		this.addPoint(pt.x, pt.y);
 	}
 
-	public void addPoint(final int latitudeE6, final int longitudeE6) {
-		this.mPoints.add(new Point(latitudeE6, longitudeE6));
+	public void addPoint(final int x, final int y) {
+		this.mPoints.add(new Point(x, y));
 	}
 
 	public int getNumberOfPoints() {
@@ -130,20 +123,13 @@ public class PathOverlay extends Overlay {
 		// precompute new points to the intermediate projection.
 		final int size = this.mPoints.size();
 
-		while (this.mPointsPrecomputed < size) {
-			final Point pt = this.mPoints.get(this.mPointsPrecomputed);
-			pj.toMapPixelsProjected(pt.x, pt.y, pt);
-
-			this.mPointsPrecomputed++;
-		}
-
 		Point screenPoint0 = null; // points on screen
 		Point screenPoint1 = null;
 		Point projectedPoint0; // points from the points list
 		Point projectedPoint1;
 
 		// clipping rectangle in the intermediate projection, to avoid performing projection.
-		final Rect clipBounds = pj.fromPixelsToProjected(canvas.getClipBounds());
+		final Rect clipBounds = pj.fromCurrentZoom(canvas.getClipBounds(), null);
 
 		mPath.rewind();
 		projectedPoint0 = this.mPoints.get(size - 1);
@@ -164,11 +150,11 @@ public class PathOverlay extends Overlay {
 			// the starting point may be not calculated, because previous segment was out of clip
 			// bounds
 			if (screenPoint0 == null) {
-				screenPoint0 = pj.toMapPixelsTranslated(projectedPoint0, this.mTempPoint1);
+				screenPoint0 = pj.toCurrentZoom(projectedPoint0, this.mTempPoint1);
 				mPath.moveTo(screenPoint0.x, screenPoint0.y);
 			}
 
-			screenPoint1 = pj.toMapPixelsTranslated(projectedPoint1, this.mTempPoint2);
+			screenPoint1 = pj.toCurrentZoom(projectedPoint1, this.mTempPoint2);
 
 			// skip this point, too close to previous point
 			if (Math.abs(screenPoint1.x - screenPoint0.x)

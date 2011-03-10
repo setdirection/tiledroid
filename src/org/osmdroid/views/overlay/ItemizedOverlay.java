@@ -128,7 +128,7 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		/* Draw in backward cycle, so the items with the least index are on the front. */
 		for (int i = limit; i >= 0; i--) {
 			final T item = this.mItemList.get(i);
-			pj.toMapPixels(item.mGeoPoint, curScreenCoords);
+			pj.toCurrentZoom(item.mPoint, curScreenCoords);
 
 			onDrawItem(canvas, i, curScreenCoords);
 		}
@@ -238,7 +238,7 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 
 		/* These objects are created to avoid construct new ones every cycle. */
 		final Point touchScreenCoords = new Point();
-		pj.fromMapPixels(eventX, eventY, touchScreenCoords);
+		pj.fromCurrentZoom(eventX, eventY, touchScreenCoords);
 
 		touchPoint = touchScreenCoords;
 
@@ -246,7 +246,7 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		final Point curScreenCoords = new Point();
 		for (int i = 0; i < this.mItemList.size(); ++i) {
 			final T item = this.mItemList.get(i);
-			pj.toMapPixels(item.mGeoPoint, curScreenCoords);
+			pj.toCurrentZoom(item.mPoint, curScreenCoords);
 
 			getItemBoundingRetangle(item, markerScreenBounds, curScreenCoords);
 

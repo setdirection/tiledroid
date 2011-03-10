@@ -527,7 +527,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	/**
 	 * Returns a set of layout parameters with a width of
 	 * {@link android.view.ViewGroup.LayoutParams#WRAP_CONTENT}, a height of
-	 * {@link android.view.ViewGroup.LayoutParams#WRAP_CONTENT} at the {@link GeoPoint} (0, 0) align
+	 * {@link android.view.ViewGroup.LayoutParams#WRAP_CONTENT} at the {@link Point} (0, 0) align
 	 * with {@link LayoutParams#BOTTOM_CENTER}.
 	 */
 	@Override
@@ -570,7 +570,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				final LayoutParams lp = (LayoutParams) child.getLayoutParams();
 				final int childHeight = child.getMeasuredHeight();
 				final int childWidth = child.getMeasuredWidth();
-				getProjection().toMapPixels(lp.geoPoint, mPoint);
+				getProjection().toCurrentZoom(lp.geoPoint, mPoint);
 				final int x = mPoint.x + getWidth() / 2;
 				final int y = mPoint.y + getHeight() / 2;
 				int childRight = x;
@@ -630,7 +630,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				final LayoutParams lp = (LayoutParams) child.getLayoutParams();
 				final int childHeight = child.getMeasuredHeight();
 				final int childWidth = child.getMeasuredWidth();
-				getProjection().toMapPixels(lp.geoPoint, mPoint);
+				getProjection().toCurrentZoom(lp.geoPoint, mPoint);
 				final int x = mPoint.x + getWidth() / 2;
 				final int y = mPoint.y + getHeight() / 2;
 				int childLeft = x;
@@ -902,26 +902,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		this.mZoomController.setZoomOutEnabled(canZoomOut());
 	}
 
-	/**
-	 * @param centerMapTileCoords
-	 * @param tileSizePx
-	 * @param reuse
-	 *            just pass null if you do not have a Point to be 'recycled'.
-	 */
-	private Point getUpperLeftCornerOfCenterMapTileInScreen(final Point centerMapTileCoords,
-			final int tileSizePx, final Point reuse) {
-		final Point out = reuse != null ? reuse : new Point();
-
-		final int worldTiles_2 = 1 << mZoomLevel - 1;
-		final int centerMapTileScreenLeft = (centerMapTileCoords.x - worldTiles_2) * tileSizePx
-				- tileSizePx / 2;
-		final int centerMapTileScreenTop = (centerMapTileCoords.y - worldTiles_2) * tileSizePx
-				- tileSizePx / 2;
-
-		out.set(centerMapTileScreenLeft, centerMapTileScreenTop);
-		return out;
-	}
-
 	public void setBuiltInZoomControls(final boolean on) {
 		this.mEnableZoomController = on;
 		this.checkZoomButtons();
@@ -977,21 +957,10 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * @author Nicolas Gramlich
 	 * @author Manuel Stahl
 	 */
-
 	public class Projection implements GeoConstants {
-
-		private final int viewWidth_2 = getWidth() / 2;
-		private final int viewHeight_2 = getHeight() / 2;
-		private final int worldSize_2 = getWorldSizePx() / 2;
-		private final int offsetX = -worldSize_2;
-		private final int offsetY = -worldSize_2;
-
-		private final BoundingBoxE6 mBoundingBoxProjection;
 		private final int mZoomLevelProjection;
 		private final int mTileSizePixelsProjection;
 		private final int mTileMapZoomProjection;
-		private final Point mCenterMapTileCoordsProjection;
-		private final Point mUpperLeftCornerOfCenterMapTileProjection;
 
 		private Projection() {
 
@@ -1002,16 +971,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			// TODO Draw to attributes and so make it only 'valid' for a short time.
 			mTileSizePixelsProjection = mTileSizePixels;
 			mTileMapZoomProjection = getMapTileZoom(getTileSizePixels());
-
-			/*
-			 * Get the center MapTile which is above this.mLatitudeE6 and this.mLongitudeE6 .
-			 */
-			mCenterMapTileCoordsProjection = calculateCenterMapTileCoords(getTileSizePixels(),
-					getZoomLevel());
-			mUpperLeftCornerOfCenterMapTileProjection = getUpperLeftCornerOfCenterMapTileInScreen(
-					getCenterMapTileCoords(), getTileSizePixels(), null);
-
-			mBoundingBoxProjection = MapView.this.getBoundingBox();
 		}
 
 		public int getTileSizePixels() {
@@ -1026,180 +985,32 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			return mZoomLevelProjection;
 		}
 
-		public Point getCenterMapTileCoords() {
-			return mCenterMapTileCoordsProjection;
+		public Point toCurrentZoom(final Point worldCoords, final Point reuse) {
+			return toCurrentZoom(worldCoords.x, worldCoords.y, reuse);
 		}
-
-		public Point getUpperLeftCornerOfCenterMapTile() {
-			return mUpperLeftCornerOfCenterMapTileProjection;
-		}
-
-		public BoundingBoxE6 getBoundingBox() {
-			return mBoundingBoxProjection;
-		}
-
-		private Point calculateCenterMapTileCoords(final int tileSizePixels, final int zoomLevel) {
-			final int mapTileZoom = getMapTileZoom(tileSizePixels);
-			final int worldTiles_2 = 1 << zoomLevel - 1;
-			// convert to tile coordinate and make positive
-			return new Point((getScrollX() >> mapTileZoom) + worldTiles_2,
-					(getScrollY() >> mapTileZoom) + worldTiles_2);
-		}
-
-		/**
-		 * Converts x/y ScreenCoordinates to the underlying GeoPoint.
-		 *
-		 * @param x
-		 * @param y
-		 * @return GeoPoint under x/y.
-		 */
-		public GeoPoint fromPixels(final float x, final float y) {
-			return getBoundingBox().getGeoPointOfRelativePositionWithLinearInterpolation(
-					x / getWidth(), y / getHeight());
-		}
-
-		public Point fromMapPixels(final int x, final int y, final Point reuse) {
+		public Point toCurrentZoom(final int worldX, final int worldY, final Point reuse) {
 			final Point out = reuse != null ? reuse : new Point();
-			out.set(x - viewWidth_2, y - viewHeight_2);
-			out.offset(getScrollX(), getScrollY());
+
+			out.set(worldX >> mZoomLevel, worldY >> mZoomLevel);
 			return out;
 		}
 
-		/**
-		 * Converts a GeoPoint to its ScreenCoordinates. <br/>
-		 * <br/>
-		 * <b>CAUTION</b> ! Conversion currently has a large error on <code>zoomLevels <= 7</code>.<br/>
-		 * The Error on ZoomLevels higher than 7, the error is below <code>1px</code>.<br/>
-		 * TODO: Add a linear interpolation to minimize this error.
-		 *
-		 * <PRE>
-		 * Zoom 	Error(m) 	Error(px)
-		 * 11 	6m 	1/12px
-		 * 10 	24m 	1/6px
-		 * 8 	384m 	1/2px
-		 * 6 	6144m 	3px
-		 * 4 	98304m 	10px
-		 * </PRE>
-		 *
-		 * @param in
-		 *            the GeoPoint you want the onScreenCoordinates of.
-		 * @param reuse
-		 *            just pass null if you do not have a Point to be 'recycled'.
-		 * @return the Point containing the approximated ScreenCoordinates of the GeoPoint passed.
-		 */
-		public Point toMapPixels(final GeoPoint in, final Point reuse) {
-			final Point out = reuse != null ? reuse : new Point();
+		public Rect fromCurrentZoom(final Rect curCoords, final Rect reuse) {
+			final Rect out = reuse != null ? reuse : new Rect();
 
-			final Point coords = Mercator.projectGeoPoint(in.getLatitudeE6(), in.getLongitudeE6(),
-					getPixelZoomLevel(), null);
-			out.set(coords.x, coords.y);
-			out.offset(offsetX, offsetY);
+			out.set(
+					curCoords.left << mZoomLevel, curCoords.top << mZoomLevel,
+					curCoords.right << mZoomLevel, curCoords.bottom << mZoomLevel);
 			return out;
 		}
-
-		/**
-		 * Performs only the first computationally heavy part of the projection, needToCall
-		 * toMapPixelsTranslated to get final position.
-		 *
-		 * @param latituteE6
-		 *            the latitute of the point
-		 * @param longitudeE6
-		 *            the longitude of the point
-		 * @param reuse
-		 *            just pass null if you do not have a Point to be 'recycled'.
-		 * @return intermediate value to be stored and passed to toMapPixelsTranslated on paint.
-		 */
-		public Point toMapPixelsProjected(final int latituteE6, final int longitudeE6,
-				final Point reuse) {
+		public Point fromCurrentZoom(final Point curCoords, final Point reuse) {
+			return fromCurrentZoom(curCoords.x, curCoords.y, reuse);
+		}
+		public Point fromCurrentZoom(final int curX, final int curY, final Point reuse) {
 			final Point out = reuse != null ? reuse : new Point();
 
-			// 26 is the biggest zoomlevel we can project
-			final Point coords = Mercator.projectGeoPoint(latituteE6, longitudeE6, 28, out);
-			out.set(coords.x, coords.y);
+			out.set(curX << mZoomLevel, curY << mZoomLevel);
 			return out;
-		}
-
-		/**
-		 * Performs the second computationally light part of the projection.
-		 *
-		 * @param in
-		 *            the Point calculated by the toMapPixelsProjected
-		 * @param reuse
-		 *            just pass null if you do not have a Point to be 'recycled'.
-		 * @return the Point containing the approximated ScreenCoordinates of the initial GeoPoint
-		 *         passed to the toMapPixelsProjected.
-		 */
-		public Point toMapPixelsTranslated(final Point in, final Point reuse) {
-			final Point out = reuse != null ? reuse : new Point();
-
-			// 26 is the biggest zoomlevel we can project
-			final int zoomDifference = 28 - getPixelZoomLevel();
-			out.set((in.x >> zoomDifference) + offsetX, (in.y >> zoomDifference) + offsetY);
-			return out;
-		}
-
-		/**
-		 * Translates a rectangle from screen coordinates to intermediate coordinates.
-		 *
-		 * @param in
-		 *            the rectangle in screen coordinates
-		 * @return a rectangle in intermediate coords.
-		 */
-		public Rect fromPixelsToProjected(final Rect in) {
-			final Rect result = new Rect();
-
-			// 26 is the biggest zoomlevel we can project
-			final int zoomDifference = 28 - getPixelZoomLevel();
-
-			final int x0 = in.left - offsetX << zoomDifference;
-			final int x1 = in.right - offsetX << zoomDifference;
-			final int y0 = in.bottom - offsetX << zoomDifference;
-			final int y1 = in.top - offsetX << zoomDifference;
-
-			result.set(Math.min(x0, x1), Math.min(y0, y1), Math.max(x0, x1), Math.max(y0, y1));
-			return result;
-		}
-
-		public Point toPixels(final Point tileCoords, final Point reuse) {
-			return toPixels(tileCoords.x, tileCoords.y, reuse);
-		}
-
-		public Point toPixels(final int tileX, final int tileY, final Point reuse) {
-			final Point out = reuse != null ? reuse : new Point();
-
-			out.set(tileX * getTileSizePixels(), tileY * getTileSizePixels());
-			out.offset(offsetX, offsetY);
-
-			return out;
-		}
-
-		// not presently used
-		public Rect toPixels(final BoundingBoxE6 pBoundingBoxE6) {
-			final Rect rect = new Rect();
-
-			final Point reuse = new Point();
-
-			toMapPixels(
-					new GeoPoint(pBoundingBoxE6.getLatNorthE6(), pBoundingBoxE6.getLonWestE6()),
-					reuse);
-			rect.left = reuse.x;
-			rect.top = reuse.y;
-
-			toMapPixels(
-					new GeoPoint(pBoundingBoxE6.getLatSouthE6(), pBoundingBoxE6.getLonEastE6()),
-					reuse);
-			rect.right = reuse.x;
-			rect.bottom = reuse.y;
-
-			return rect;
-		}
-
-		public Point toPixels(final GeoPoint in, final Point out) {
-			return toMapPixels(in, out);
-		}
-
-		public GeoPoint fromPixels(final int x, final int y) {
-			return fromPixels((float) x, (float) y);
 		}
 	}
 
@@ -1267,8 +1078,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return true;
 			}
 
-			final GeoPoint center = getProjection().fromPixels(e.getX(), e.getY());
-			return zoomInFixing(center);
+			final Point center = getProjection().fromCurrentZoom((int)e.getX(), (int)e.getY(), null);
+			return zoomInFixing(center.x, center.y);
 		}
 
 		@Override
@@ -1378,7 +1189,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		/**
 		 * The location of the child within the map view.
 		 */
-		public GeoPoint geoPoint;
+		public Point geoPoint;
 
 		/**
 		 * The alignment the alignment of the view compared to the location.
@@ -1401,12 +1212,12 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		 *            {@link #BOTTOM_LEFT}, {@link #BOTTOM_RIGHT} {@link #TOP_CENTER},
 		 *            {@link #TOP_LEFT}, {@link #TOP_RIGHT}
 		 */
-		public LayoutParams(int width, int height, GeoPoint geoPoint, int alignment) {
+		public LayoutParams(int width, int height, Point geoPoint, int alignment) {
 			super(width, height);
 			if (geoPoint != null)
 				this.geoPoint = geoPoint;
 			else
-				this.geoPoint = new GeoPoint(0, 0);
+				this.geoPoint = new Point(0, 0);
 			this.alignment = alignment;
 		}
 
@@ -1422,7 +1233,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		 */
 		public LayoutParams(Context c, AttributeSet attrs) {
 			super(c, attrs);
-			this.geoPoint = new GeoPoint(0, 0);
+			this.geoPoint = new Point(0, 0);
 			this.alignment = BOTTOM_CENTER;
 		}
 

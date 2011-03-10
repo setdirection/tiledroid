@@ -3,7 +3,6 @@ package org.osmdroid.views.overlay;
 
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
-import org.osmdroid.util.GeoPoint;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
 
@@ -33,7 +32,7 @@ public class SimpleLocationOverlay extends Overlay {
 	/** Coordinates the feet of the person are located. */
 	protected final android.graphics.Point PERSON_HOTSPOT = new android.graphics.Point(24, 39);
 
-	protected GeoPoint mLocation;
+	protected Point mLocation;
 	private final Point screenCoords = new Point();
 
 	// ===========================================================
@@ -54,11 +53,11 @@ public class SimpleLocationOverlay extends Overlay {
 	// Getter & Setter
 	// ===========================================================
 
-	public void setLocation(final GeoPoint mp) {
+	public void setLocation(final Point mp) {
 		this.mLocation = mp;
 	}
 
-	public GeoPoint getMyLocation() {
+	public Point getMyLocation() {
 		return this.mLocation;
 	}
 
@@ -70,7 +69,7 @@ public class SimpleLocationOverlay extends Overlay {
 	public void draw(final Canvas c, final MapView osmv, final boolean shadow) {
 		if (!shadow && this.mLocation != null) {
 			final Projection pj = osmv.getProjection();
-			pj.toMapPixels(this.mLocation, screenCoords);
+			pj.toCurrentZoom(this.mLocation, screenCoords);
 
 			c.drawBitmap(PERSON_ICON, screenCoords.x - PERSON_HOTSPOT.x, screenCoords.y
 					- PERSON_HOTSPOT.y, this.mPaint);

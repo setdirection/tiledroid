@@ -2,18 +2,17 @@
 package org.osmdroid.views.overlay;
 
 import org.osmdroid.ResourceProxy;
-import org.osmdroid.util.GeoPoint;
 
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 
 /**
- * Immutable class describing a GeoPoint with a Title and a Description.
- * 
+ * Immutable class describing a Point with a Title and a Description.
+ *
  * @author Nicolas Gramlich
  * @author Theodore Hong
  * @author Fred Eisele
- * 
+ *
  */
 public class OverlayItem {
 
@@ -39,7 +38,7 @@ public class OverlayItem {
 	public final long mKey;
 	public final String mTitle;
 	public final String mDescription;
-	public final GeoPoint mGeoPoint;
+	public final Point mPoint;
 	protected Drawable mMarker;
 	protected Point mMarkerHotspot;
 	protected HotspotPlace mStdHotspotPlace;
@@ -53,17 +52,16 @@ public class OverlayItem {
 	 *            this should be <b>singleLine</b> (no <code>'\n'</code> )
 	 * @param aDescription
 	 *            a <b>multiLine</b> description ( <code>'\n'</code> possible)
-	 * @param aGeoPoint
+	 * @param aPoint
 	 */
-	public OverlayItem(final String aTitle, final String aDescription, final GeoPoint aGeoPoint) {
-		this(-1L, aTitle, aDescription, aGeoPoint);
+	public OverlayItem(final String aTitle, final String aDescription, final Point aPoint) {
+		this(-1L, aTitle, aDescription, aPoint);
 	}
 
-	public OverlayItem(final long aKey, final String aTitle, final String aDescription,
-			final GeoPoint aGeoPoint) {
+	public OverlayItem(final long aKey, final String aTitle, final String aDescription, final Point aPoint) {
 		this.mTitle = aTitle;
 		this.mDescription = aDescription;
-		this.mGeoPoint = aGeoPoint;
+		this.mPoint = aPoint;
 		this.mKey = aKey;
 	}
 
@@ -82,8 +80,8 @@ public class OverlayItem {
 		return mDescription;
 	}
 
-	public GeoPoint getPoint() {
-		return mGeoPoint;
+	public Point getPoint() {
+		return mPoint;
 	}
 
 	/*
@@ -92,9 +90,9 @@ public class OverlayItem {
 	 * be returned for different states. The different markers can have different bounds. The
 	 * default behavior is to call {@link setState(android.graphics.drawable.Drawable, int)} on the
 	 * overlay item's marker, if it exists, and then return it.
-	 * 
+	 *
 	 * @param stateBitset The current state.
-	 * 
+	 *
 	 * @return The marker for the current state, or null if the default marker for the overlay
 	 * should be used.
 	 */
@@ -153,7 +151,7 @@ public class OverlayItem {
 	 * This is a factory method. The interaction between the hot-spot-place and the hot-spot is
 	 * somewhat ambiguous. Generally either one or the other will be specified and the other will be
 	 * set appropriately. The ambiguity arises in the case where they are both specified.
-	 * 
+	 *
 	 * @param pMarker
 	 * @param pHotspot
 	 * @param pHotspotPlace
@@ -162,8 +160,7 @@ public class OverlayItem {
 	 */
 	public static OverlayItem getDefaultItem(final Drawable pMarker, final Point pHotspot,
 			final HotspotPlace pHotspotPlace, final ResourceProxy pResourceProxy) {
-		final OverlayItem that = new OverlayItem("<default>", "used when no marker is specified",
-				new GeoPoint(0.0, 0.0));
+		final OverlayItem that = new OverlayItem("<default>", "used when no marker is specified", new Point(0, 0));
 		that.mMarker = (pMarker != null) ? pMarker : pResourceProxy
 				.getDrawable(ResourceProxy.bitmap.marker_default);
 
