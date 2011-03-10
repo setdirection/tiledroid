@@ -284,7 +284,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 			// Update the center location for the new zoom
 			ViewportCoord viewCenter = mProjection.toViewport(center, null);
-			scrollTo(viewCenter.x + getScrollX(), viewCenter.y + getScrollY());
+			scrollTo(viewCenter.x, viewCenter.y);
 		}
 
 		if (mOverlayManager.onSnapToItem(getScrollX(), getScrollY(), snapPoint, this)) {
@@ -947,8 +947,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 			// In inverse of the -getX()/2 is done when rendering rather than here. Makes it fun that way.
 			out.set(
-					zoomCoord.x - getScrollX() - mWorldSize_2,
-					zoomCoord.y - getScrollY() - mWorldSize_2);
+					zoomCoord.x - mWorldSize_2,
+					zoomCoord.y - mWorldSize_2);
 			return out;
 		}
 		public WorldCoord fromViewport(final ViewportCoord viewportCord, final WorldCoord reuse) {
