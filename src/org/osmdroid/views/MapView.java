@@ -858,21 +858,12 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		private final int mWorldSizeX_2 = mTileSizePixels*mTileXCount / 2;
 		private final int mWorldSizeY_2 = mTileSizePixels*mTileYCount / 2;
 		private final int mZoomDelta = getMaxZoomLevel() - mZoomLevel;
-		private final int mZoomLevelProjection;
-		private final int mTileSizePixelsProjection;
-
-		private Projection() {
-
-			/*
-			 * Do some calculations and drag attributes to local variables to save some performance.
-			 */
-			mZoomLevelProjection = mZoomLevel;
-			// TODO Draw to attributes and so make it only 'valid' for a short time.
-			mTileSizePixelsProjection = mTileSizePixels;
-		}
 
 		public int getTileSizePixels() {
-			return mTileSizePixelsProjection;
+			return mTileSizePixels;
+		}
+		public int getZoomLevel() {
+			return mZoomLevel;
 		}
 
 		public int getTileXCount() {
@@ -887,10 +878,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		}
 		public int getWorldSizeY_2() {
 			return mWorldSizeY_2;
-		}
-
-		public int getZoomLevel() {
-			return mZoomLevelProjection;
 		}
 
 		public ZoomCoord toCurrentZoom(final WorldCoord worldCoords, final ZoomCoord reuse) {

@@ -133,7 +133,7 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 		mViewPort.offset(mWorldSizeX_2, mWorldSizeY_2);
 
 		// Draw the tiles!
-		drawTiles(c, pj._getZoomLevel(), pj.getTileSizePixels(), mViewPort);
+		drawTiles(c, pj, mViewPort);
 	}
 
 	/**
@@ -141,8 +141,9 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	 * platform-specific characteristics (like Android's canvas's having 0,0 as the center rather
 	 * than the upper-left corner).
 	 */
-	public void drawTiles(final Canvas c, final int zoomLevel, final int tileSizePx,
-			final Rect viewPort) {
+	public void drawTiles(final Canvas c, final Projection pj, final Rect viewPort) {
+		final int tileSizePx = pj.getTileSizePixels();
+		final int zoomLevel = pj.getZoomLevel();
 
 		/*
 		 * Calculate the amount of tiles needed for each side around the center one.
@@ -152,8 +153,8 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 		final int tileNeededToTopOfCenter = (viewPort.top / tileSizePx) - 1;
 		final int tileNeededToBottomOfCenter = viewPort.bottom / tileSizePx;
 
-		final int mapTileUpperBoundX = mTileProvider.getTileXCount(zoomLevel);
-		final int mapTileUpperBoundY = mTileProvider.getTileYCount(zoomLevel);
+		final int mapTileUpperBoundX = pj.getTileXCount();
+		final int mapTileUpperBoundY = pj.getTileYCount();
 
 		// make sure the cache is big enough for all the tiles
 		final int numNeeded = (tileNeededToBottomOfCenter - tileNeededToTopOfCenter + 1)
