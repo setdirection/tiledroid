@@ -174,18 +174,22 @@ public class TilesOverlay extends Overlay {
 
 				Drawable currentMapTile = null;
 
+				mTileRect.set(x * tileSizePx, y * tileSizePx, x * tileSizePx + tileSizePx, y * tileSizePx + tileSizePx);
+				mTileRect.offset(-mZoomSizeX_2, -mZoomSizeY_2);
+
+				// Render the background under this, allowing transparent sections to have a background
+				// TODO : See if we can optimize this so we aren't double rendering the same data
+				currentMapTile = getLoadingTile();
+				if (currentMapTile != null) {
+					onTileReadyToDraw(c, currentMapTile, mTileRect);
+				}
+
 				if (0 <= x && x < mapTileUpperBoundX
 						&& 0 <= y && y < mapTileUpperBoundY) {
 					currentMapTile = mTileProvider.getMapTile(tile);
-				}
-				if (currentMapTile == null) {
-					currentMapTile = getLoadingTile();
-				}
-
-				if (currentMapTile != null) {
-					mTileRect.set(x * tileSizePx, y * tileSizePx, x * tileSizePx + tileSizePx, y
-							* tileSizePx + tileSizePx);
-					onTileReadyToDraw(c, currentMapTile, mTileRect);
+					if (currentMapTile != null) {
+						onTileReadyToDraw(c, currentMapTile, mTileRect);
+					}
 				}
 
 				if (DEBUGMODE) {
@@ -211,7 +215,6 @@ public class TilesOverlay extends Overlay {
 
 	protected void onTileReadyToDraw(final Canvas c, final Drawable currentMapTile,
 			final Rect tileRect) {
-		tileRect.offset(-mZoomSizeX_2, -mZoomSizeY_2);
 		currentMapTile.setBounds(tileRect);
 		currentMapTile.draw(c);
 	}
