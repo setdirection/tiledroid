@@ -772,6 +772,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	public boolean setPositionAndScale(final Object obj, final PositionAndScale aNewObjPosAndScale,
 			final PointInfo aTouchPoint) {
 		float multiTouchScale = aNewObjPosAndScale.getScale();
+
 		// If we are at the first or last zoom level, prevent pinching/expanding
 		if ((multiTouchScale > 1) && !canZoomIn()) {
 			multiTouchScale = 1;
@@ -779,7 +780,16 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		if ((multiTouchScale < 1) && !canZoomOut()) {
 			multiTouchScale = 1;
 		}
+
+		float scaleDelta = multiTouchScale/mMultiTouchScale;
 		mMultiTouchScale = multiTouchScale;
+
+		final float focusOffsetX  = ((float)getWidth() / 2 - aTouchPoint.getX())/scaleDelta;
+		final float focusOffsetY = ((float)getHeight() / 2 - aTouchPoint.getY())/scaleDelta;
+
+		ViewportCoord viewCoord = new ViewportCoord((int)(aTouchPoint.getX() + focusOffsetX), (int)(aTouchPoint.getY() + focusOffsetY));
+		setMapCenter(getProjection().fromViewport(viewCoord, mCenter), true);
+
 		invalidate(); // redraw
 		return true;
 	}
