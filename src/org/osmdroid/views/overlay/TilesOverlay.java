@@ -168,7 +168,12 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 				final int tileX = mWrapMap ? x : MyMath.mod(x, mapTileUpperBoundX);
 				final MapTile tile = new MapTile(zoomLevel, tileX, tileY);
 
-				Drawable currentMapTile = mTileProvider.getMapTile(tile);
+				Drawable currentMapTile = null;
+
+				if (0 <= x && x < mapTileUpperBoundX
+						&& 0 <= y && y < mapTileUpperBoundY) {
+					currentMapTile = mTileProvider.getMapTile(tile);
+				}
 				if (currentMapTile == null) {
 					currentMapTile = getLoadingTile();
 				}
