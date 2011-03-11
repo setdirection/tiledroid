@@ -9,15 +9,15 @@ import android.graphics.Bitmap;
 
 /**
  * @author Neil Boyd
- * 
+ *
  */
 public class DefaultResourceProxyTest {
 
 	@Test
 	public void test_getString() {
 		final ResourceProxy rp = new DefaultResourceProxyImpl(null);
-		final String osmarender = rp.getString(ResourceProxy.string.osmarender);
-		assertEquals("Got string okay", "Osmarender", osmarender);
+		final String osmarender = rp.getString(ResourceProxy.string.unknown);
+		assertEquals("Got string okay", "Unknown", osmarender);
 	}
 
 	@Test(expected = RuntimeException.class)

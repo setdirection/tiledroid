@@ -40,54 +40,8 @@ public class DefaultResourceProxyImpl implements ResourceProxy, MapViewConstants
 	@Override
 	public String getString(final string pResId) {
 		switch (pResId) {
-		case osmarender:
-			return "Osmarender";
-		case mapnik:
-			return "Mapnik";
-		case cyclemap:
-			return "Cycle Map";
-		case public_transport:
-			return "Public transport";
-		case base:
-			return "OSM base layer";
-		case topo:
-			return "Topographic";
-		case hills:
-			return "Hills";
-		case cloudmade_standard:
-			return "CloudMade (Standard tiles)";
-		case cloudmade_small:
-			return "CloudMade (small tiles)";
-		case mapquest_osm:
-			return "Mapquest";
-		case fiets_nl:
-			return "OpenFietsKaart overlay";
-		case base_nl:
-			return "Netherlands base overlay";
-		case roads_nl:
-			return "Netherlands roads overlay";
 		case unknown:
 			return "Unknown";
-		case format_distance_meters:
-			return "%s m";
-		case format_distance_kilometers:
-			return "%s km";
-		case format_distance_miles:
-			return "%s mi";
-		case format_distance_nautical_miles:
-			return "%s nm";
-		case format_distance_feet:
-			return "%s ft";
-		case online_mode:
-			return "Online mode";
-		case offline_mode:
-			return "Offline mode";
-		case my_location:
-			return "My location";
-		case compass:
-			return "Compass";
-		case map_mode:
-			return "Map mode";
 		default:
 			throw new IllegalArgumentException();
 		}
