@@ -235,7 +235,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		mTileProvider.setTileSource(aTileSource);
 		mTileSizePixels = aTileSource.getTileSizePixels();
 		this.checkZoomButtons();
-		this.setZoomLevel(mZoomLevel); // revalidate zoom level
+		this.setZoomLevel(getZoomLevel(false)); // revalidate zoom level
 		postInvalidate();
 	}
 
@@ -243,12 +243,12 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * @param aZoomLevel
 	 *            the zoom level bound by the tile source
 	 */
-	int setZoomLevel(final int aZoomLevel) {
+	private void setZoomLevel(final int aZoomLevel) {
 		final int minZoomLevel = getMinZoomLevel();
 		final int maxZoomLevel = getMaxZoomLevel();
 
 		final int newZoomLevel = Math.max(minZoomLevel, Math.min(maxZoomLevel, aZoomLevel));
-		final int curZoomLevel = this.mZoomLevel;
+		final int curZoomLevel = this.getZoomLevel(false);
 
 		final WorldCoord center = getMapCenter();
 
@@ -275,7 +275,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			final ZoomEvent event = new ZoomEvent(this, newZoomLevel);
 			mListener.onZoom(event);
 		}
-		return this.mZoomLevel;
 	}
 
 	/**
@@ -324,7 +323,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	public boolean canZoomIn() {
 		final int maxZoomLevel = getMaxZoomLevel();
-		if (mZoomLevel >= maxZoomLevel) {
+		if (getZoomLevel() >= maxZoomLevel) {
 			return false;
 		}
 		if (mAnimationListener.animating && mAnimationListener.targetZoomLevel >= maxZoomLevel) {
@@ -335,7 +334,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	public boolean canZoomOut() {
 		final int minZoomLevel = getMinZoomLevel();
-		if (mZoomLevel <= minZoomLevel) {
+		if (getZoomLevel() <= minZoomLevel) {
 			return false;
 		}
 		if (mAnimationListener.animating && mAnimationListener.targetZoomLevel <= minZoomLevel) {
@@ -354,7 +353,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				// TODO extend zoom (and return true)
 				return false;
 			} else {
-				mAnimationListener.targetZoomLevel = mZoomLevel + 1;
+				mAnimationListener.targetZoomLevel = getZoomLevel() + 1;
 				mAnimationListener.animating = true;
 				startAnimation(mZoomInAnimation);
 				return true;
@@ -379,7 +378,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				// TODO extend zoom (and return true)
 				return false;
 			} else {
-				mAnimationListener.targetZoomLevel = mZoomLevel - 1;
+				mAnimationListener.targetZoomLevel = getZoomLevel() - 1;
 				mAnimationListener.animating = true;
 				startAnimation(mZoomOutAnimation);
 				return true;
@@ -662,7 +661,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		if (mScroller.computeScrollOffset()) {
 			if (mScroller.isFinished()) {
 				// This will facilitate snapping-to any Snappable points.
-				setZoomLevel(mZoomLevel);
+				setZoomLevel(getZoomLevel());
 			} else {
 				scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
 			}
@@ -766,7 +765,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		if (obj == null && mMultiTouchScale != 1.0f) {
 			final float scaleDiffFloat = (float) (Math.log(mMultiTouchScale) * ZOOM_LOG_BASE_INV);
 			final int scaleDiffInt = Math.round(scaleDiffFloat);
-			setZoomLevel(mZoomLevel + scaleDiffInt);
+			setZoomLevel(getZoomLevel() + scaleDiffInt);
 			// XXX maybe zoom in/out instead of zooming direct to zoom level
 			// - probably not a good idea because you'll repeat the animation
 		}
