@@ -52,8 +52,8 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	private boolean mOptionsMenuEnabled = true;
 	private boolean mWrapMap = false;
 
-	private int mWorldSizeX_2;
-	private int mWorldSizeY_2;
+	private int mZoomSizeX_2;
+	private int mZoomSizeY_2;
 
 	/** A drawable loading tile **/
 	private BitmapDrawable mLoadingTile = null;
@@ -78,10 +78,21 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 		this.mTileProvider.detach();
 	}
 
-	public void setAlpha(final int a) {
-		this.mPaint.setAlpha(a);
+	/*
+	 * World definition. Defaults to a square with no clipping on the trailing edge tiles.
+	 */
+	public int getWorldWidth() {
+		return mTileProvider.getWorldWidth();
 	}
-
+	public int getWorldHeight() {
+		return mTileProvider.getWorldHeight();
+	}
+	public int getZoomWidth(int zoomLevel) {
+		return mTileProvider.getZoomWidth(zoomLevel);
+	}
+	public int getZoomHeight(int zoomLevel) {
+		return mTileProvider.getZoomHeight(zoomLevel);
+	}
 	public int getTileXCount(int zoomLevel) {
 		return mTileProvider.getTileXCount(zoomLevel);
 	}
@@ -123,14 +134,14 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 		// Load the half-world size
 		final Projection pj = osmv.getProjection();
-		mWorldSizeX_2 = pj.getWorldSizeX_2();
-		mWorldSizeY_2 = pj.getWorldSizeY_2();
+		mZoomSizeX_2 = pj.getZoomSizeX_2();
+		mZoomSizeY_2 = pj.getZoomSizeY_2();
 
 		// Get the area we are drawing to
 		c.getClipBounds(mViewPort);
 
 		// Translate the Canvas coordinates into Mercator coordinates
-		mViewPort.offset(mWorldSizeX_2, mWorldSizeY_2);
+		mViewPort.offset(mZoomSizeX_2, mZoomSizeY_2);
 
 		// Draw the tiles!
 		drawTiles(c, pj, mViewPort);
@@ -198,8 +209,8 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 		// draw a cross at center in debug mode
 		if (DEBUGMODE) {
-			final Point centerPoint = new Point(viewPort.centerX() - mWorldSizeX_2,
-					viewPort.centerY() - mWorldSizeY_2);
+			final Point centerPoint = new Point(viewPort.centerX() - mZoomSizeX_2,
+					viewPort.centerY() - mZoomSizeY_2);
 			c.drawLine(centerPoint.x, centerPoint.y - 9, centerPoint.x, centerPoint.y + 9, mPaint);
 			c.drawLine(centerPoint.x - 9, centerPoint.y, centerPoint.x + 9, centerPoint.y, mPaint);
 		}
@@ -208,7 +219,7 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 	protected void onTileReadyToDraw(final Canvas c, final Drawable currentMapTile,
 			final Rect tileRect) {
-		tileRect.offset(-mWorldSizeX_2, -mWorldSizeY_2);
+		tileRect.offset(-mZoomSizeX_2, -mZoomSizeY_2);
 		currentMapTile.setBounds(tileRect);
 		currentMapTile.draw(c);
 	}

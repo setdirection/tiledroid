@@ -66,9 +66,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	// Fields
 	// ===========================================================
 
-	/** Current zoom level for map tiles. */
-	private int mZoomLevel = 0;
-
 	private int mTileSizePixels = 0;
 
 	private final OverlayManager mOverlayManager;
@@ -144,6 +141,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 		mGestureDetector = new GestureDetector(context, new MapViewGestureDetectorListener());
 		mGestureDetector.setOnDoubleTapListener(new MapViewDoubleClickListener());
+
+		setZoomLevel(0);
 	}
 
 	/**
@@ -212,9 +211,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * @return
 	 */
 	public Projection getProjection() {
-		if (mProjection == null) {
-			mProjection = new Projection();
-		}
 		return mProjection;
 	}
 
@@ -252,19 +248,20 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 		final WorldCoord center = getMapCenter();
 
-		this.mZoomLevel = newZoomLevel;
-		this.checkZoomButtons();
-
 		// snap for all snappables
 		final Point snapPoint = new Point();
 		if (curZoomLevel != newZoomLevel) {
 			// XXX why do we need a new projection here?
-			mProjection = new Projection();
+			mProjection = new Projection(newZoomLevel);
 
 			// Update the center location for the new zoom
-			ViewportCoord viewCenter = mProjection.toViewport(center, null);
-			scrollTo(viewCenter.x, viewCenter.y);
+			if (curZoomLevel >= 0) {
+				ViewportCoord viewCenter = mProjection.toViewport(center, null);
+				scrollTo(viewCenter.x, viewCenter.y);
+			}
 		}
+
+		this.checkZoomButtons();
 
 		if (mOverlayManager.onSnapToItem(getScrollX(), getScrollY(), snapPoint, this)) {
 			scrollTo(snapPoint.x, snapPoint.y);
@@ -299,7 +296,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		if (aPending && mAnimationListener.animating) {
 			return mAnimationListener.targetZoomLevel;
 		} else {
-			return mZoomLevel;
+			return mProjection != null ? mProjection.getZoomLevel() : -1;
 		}
 	}
 
@@ -674,17 +671,17 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	public void scrollTo(int x, int y) {
 		// Adjust the scroll position before it is actually updated.
 		// Either wrap or clip the parameters based on the WrapMap flag
-		final int worldSizeX = mProjection.getWorldSizeX_2() << 1;
-		final int worldSizeY = mProjection.getWorldSizeY_2() << 1;
+		final int zoomSizeX = mProjection.getZoomSizeX_2() << 1;
+		final int zoomSizeY = mProjection.getZoomSizeY_2() << 1;
 		if (mOverlayManager.isWrapMap()) {
-			final int renderOffX = Math.abs(getWidth() - worldSizeX) >> 1;
-			final int renderOffY = Math.abs(getHeight() - worldSizeY) >> 1;
+			final int renderOffX = Math.abs(getWidth() - zoomSizeX) >> 1;
+			final int renderOffY = Math.abs(getHeight() - zoomSizeY) >> 1;
 
 			x = Math.max(-renderOffX, Math.min(x, renderOffX));
 			y = Math.max(-renderOffY, Math.min(y, renderOffY));
 		} else {
-			x = x % worldSizeX;
-			y = y % worldSizeY;
+			x = x % zoomSizeX;
+			y = y % zoomSizeY;
 		}
 
 		super.scrollTo(x, y);
@@ -705,8 +702,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	@Override
 	protected void dispatchDraw(final Canvas c) {
 		final long startMs = System.currentTimeMillis();
-
-		mProjection = new Projection();
 
 		// Save the current canvas matrix
 		c.save();
@@ -845,18 +840,27 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	// ===========================================================
 
 	/**
-	 * This class may return valid results until the underlying {@link MapView} gets modified in any
-	 * way (i.e. new center).
+	 * This class may return valid results until the zoom level changes
 	 *
 	 * @author Nicolas Gramlich
 	 * @author Manuel Stahl
 	 */
 	public class Projection {
-		private final int mTileXCount = mOverlayManager.getTilesOverlay().getTileXCount(mZoomLevel);
-		private final int mTileYCount = mOverlayManager.getTilesOverlay().getTileYCount(mZoomLevel);
-		private final int mWorldSizeX_2 = mTileSizePixels*mTileXCount / 2;
-		private final int mWorldSizeY_2 = mTileSizePixels*mTileYCount / 2;
-		private final int mZoomDelta = getMaxZoomLevel() - mZoomLevel;
+		private final int mZoomLevel;
+		private final int mTileXCount;
+		private final int mTileYCount;
+		private final int mZoomSizeX_2;
+		private final int mZoomSizeY_2;
+		private final int mZoomDelta;
+
+		private Projection(int zoomLevel) {
+			mZoomLevel = zoomLevel;
+			mTileXCount = mOverlayManager.getTilesOverlay().getTileXCount(mZoomLevel);
+			mTileYCount = mOverlayManager.getTilesOverlay().getTileYCount(mZoomLevel);
+			mZoomSizeX_2 = mOverlayManager.getTilesOverlay().getZoomWidth(mZoomLevel) >> 1;
+			mZoomSizeY_2 = mOverlayManager.getTilesOverlay().getZoomHeight(mZoomLevel) >> 1;
+			mZoomDelta = getMaxZoomLevel() - mZoomLevel;
+		}
 
 		public int getTileSizePixels() {
 			return mTileSizePixels;
@@ -872,11 +876,11 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			return mTileYCount;
 		}
 
-		public int getWorldSizeX_2() {
-			return mWorldSizeX_2;
+		public int getZoomSizeX_2() {
+			return mZoomSizeX_2;
 		}
-		public int getWorldSizeY_2() {
-			return mWorldSizeY_2;
+		public int getZoomSizeY_2() {
+			return mZoomSizeY_2;
 		}
 
 		public ZoomCoord toCurrentZoom(final WorldCoord worldCoords, final ZoomCoord reuse) {
@@ -910,14 +914,14 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 			// In inverse of the -getX()/2 is done when rendering rather than here. Makes it fun that way.
 			out.set(
-					zoomCoord.x - mWorldSizeX_2,
-					zoomCoord.y - mWorldSizeY_2);
+					zoomCoord.x - mZoomSizeX_2,
+					zoomCoord.y - mZoomSizeY_2);
 			return out;
 		}
 		public WorldCoord fromViewport(final ViewportCoord viewportCord, final WorldCoord reuse) {
 			return getProjection().fromCurrentZoom(
-					viewportCord.x + getScrollX() + mWorldSizeX_2 - getWidth()/2,
-					viewportCord.y + getScrollY() + mWorldSizeY_2 - getHeight()/2,
+					viewportCord.x + getScrollX() + mZoomSizeX_2 - getWidth()/2,
+					viewportCord.y + getScrollY() + mZoomSizeY_2 - getHeight()/2,
 					reuse);
 		}
 	}
@@ -941,10 +945,10 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return true;
 			}
 
-			final int worldSizeX = 2*mProjection.getWorldSizeX_2();
-			final int worldSizeY = 2*mProjection.getWorldSizeY_2();
+			final int zoomSizeX = 2*mProjection.getZoomSizeX_2();
+			final int zoomSizeY = 2*mProjection.getZoomSizeY_2();
 			mScroller.fling(getScrollX(), getScrollY(), (int) -velocityX, (int) -velocityY,
-					-worldSizeX, worldSizeX, -worldSizeY, worldSizeY);
+					-zoomSizeX, zoomSizeX, -zoomSizeY, zoomSizeY);
 			return true;
 		}
 
