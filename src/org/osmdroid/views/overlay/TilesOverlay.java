@@ -4,8 +4,6 @@ import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileProviderBase;
-import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.util.MyMath;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
@@ -21,9 +19,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.SubMenu;
 
 /**
  * These objects are the principle consumer of map tiles.
@@ -32,14 +27,9 @@ import android.view.SubMenu;
  *
  */
 
-public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
+public class TilesOverlay extends Overlay {
 
 	private static final Logger logger = LoggerFactory.getLogger(TilesOverlay.class);
-
-	public static final int MENU_MAP_MODE = getSafeMenuId();
-	public static final int MENU_TILE_SOURCE_STARTING_ID = getSafeMenuIdSequence(TileSourceFactory
-			.getTileSources().size());
-	public static final int MENU_OFFLINE = getSafeMenuId();
 
 	/** Current tile source */
 	protected final MapTileProviderBase mTileProvider;
@@ -49,7 +39,6 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	private final Rect mTileRect = new Rect();
 	private final Rect mViewPort = new Rect();
 
-	private boolean mOptionsMenuEnabled = true;
 	private boolean mWrapMap = false;
 
 	private int mZoomSizeX_2;
@@ -227,83 +216,12 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 		currentMapTile.draw(c);
 	}
 
-	@Override
-	public void setOptionsMenuEnabled(final boolean pOptionsMenuEnabled) {
-		this.mOptionsMenuEnabled = pOptionsMenuEnabled;
-	}
-
-	@Override
-	public boolean isOptionsMenuEnabled() {
-		return this.mOptionsMenuEnabled;
-	}
-
 	public void setWrapMap(final boolean pWrapMap) {
 		this.mWrapMap = pWrapMap;
 	}
 
 	public boolean isWrapMap() {
 		return this.mWrapMap;
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(final Menu pMenu, final int pMenuIdOffset,
-			final MapView pMapView) {
-		final SubMenu mapMenu = pMenu.addSubMenu(0, MENU_MAP_MODE + pMenuIdOffset, Menu.NONE,
-				mResourceProxy.getString(ResourceProxy.string.map_mode)).setIcon(
-				mResourceProxy.getDrawable(ResourceProxy.bitmap.ic_menu_mapmode));
-
-		for (int a = 0; a < TileSourceFactory.getTileSources().size(); a++) {
-			final ITileSource tileSource = TileSourceFactory.getTileSources().get(a);
-			mapMenu.add(MENU_MAP_MODE + pMenuIdOffset, MENU_TILE_SOURCE_STARTING_ID + a
-					+ pMenuIdOffset, Menu.NONE, tileSource.localizedName(mResourceProxy));
-		}
-		mapMenu.setGroupCheckable(MENU_MAP_MODE + pMenuIdOffset, true, true);
-
-		final String title = pMapView.getResourceProxy().getString(
-				pMapView.useDataConnection() ? ResourceProxy.string.offline_mode
-						: ResourceProxy.string.online_mode);
-		final Drawable icon = pMapView.getResourceProxy().getDrawable(
-				ResourceProxy.bitmap.ic_menu_offline);
-		pMenu.add(0, MENU_OFFLINE + pMenuIdOffset, Menu.NONE, title).setIcon(icon);
-
-		return true;
-	}
-
-	@Override
-	public boolean onPrepareOptionsMenu(final Menu pMenu, final int pMenuIdOffset,
-			final MapView pMapView) {
-		final int index = TileSourceFactory.getTileSources().indexOf(
-				pMapView.getTileProvider().getTileSource());
-		if (index >= 0) {
-			pMenu.findItem(MENU_TILE_SOURCE_STARTING_ID + index + pMenuIdOffset).setChecked(true);
-		}
-
-		pMenu.findItem(MENU_OFFLINE + pMenuIdOffset).setTitle(
-				pMapView.getResourceProxy().getString(
-						pMapView.useDataConnection() ? ResourceProxy.string.offline_mode
-								: ResourceProxy.string.online_mode));
-
-		return true;
-	}
-
-	@Override
-	public boolean onMenuItemSelected(final int pFeatureId, final MenuItem pItem,
-			final int pMenuIdOffset, final MapView pMapView) {
-
-		final int menuId = pItem.getItemId() - pMenuIdOffset;
-		if ((menuId >= MENU_TILE_SOURCE_STARTING_ID)
-				&& (menuId < MENU_TILE_SOURCE_STARTING_ID
-						+ TileSourceFactory.getTileSources().size())) {
-			pMapView.setTileSource(TileSourceFactory.getTileSources().get(
-					menuId - MENU_TILE_SOURCE_STARTING_ID));
-			return true;
-		} else if (menuId == MENU_OFFLINE) {
-			final boolean useDataConnection = !pMapView.useDataConnection();
-			pMapView.setUseDataConnection(useDataConnection);
-			return true;
-		} else {
-			return false;
-		}
 	}
 
 	public int getLoadingBackgroundColor() {
