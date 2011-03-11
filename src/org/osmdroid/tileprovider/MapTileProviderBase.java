@@ -36,6 +36,13 @@ public abstract class MapTileProviderBase implements IMapTileProviderCallback,
 
 	public abstract void detach();
 
+	public int getTileXCount(int zoomLevel) {
+		return 1 << zoomLevel;
+	}
+	public int getTileYCount(int zoomLevel) {
+		return 1 << zoomLevel;
+	}
+
 	/**
 	 * Gets the minimum zoom level this tile provider can provide
 	 *

@@ -696,16 +696,17 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	public void scrollTo(int x, int y) {
 		// Adjust the scroll position before it is actually updated.
 		// Either wrap or clip the parameters based on the WrapMap flag
-		final int worldSize = getWorldSizePx();
+		final int worldSizeX = mProjection.getWorldSizeX_2() << 1;
+		final int worldSizeY = mProjection.getWorldSizeY_2() << 1;
 		if (mOverlayManager.isWrapMap()) {
-			final int renderOffX = Math.abs(getWidth() - worldSize) >> 1;
-			final int renderOffY = Math.abs(getHeight() - worldSize) >> 1;
+			final int renderOffX = Math.abs(getWidth() - worldSizeX) >> 1;
+			final int renderOffY = Math.abs(getHeight() - worldSizeY) >> 1;
 
 			x = Math.max(-renderOffX, Math.min(x, renderOffX));
 			y = Math.max(-renderOffY, Math.min(y, renderOffY));
 		} else {
-			x = x % worldSize;
-			y = y % worldSize;
+			x = x % worldSizeX;
+			y = y % worldSizeY;
 		}
 
 		super.scrollTo(x, y);
@@ -822,20 +823,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	// Package Methods
 	// ===========================================================
 
-	/**
-	 * Get the world size in pixels.
-	 */
-	int getWorldSizePx() {
-		return 1 << getPixelZoomLevel();
-	}
-
-	/**
-	 * Get the equivalent zoom level on pixel scale
-	 */
-	int getPixelZoomLevel() {
-		return this.mZoomLevel + getMapTileZoom(mTileSizePixels);
-	}
-
 	// ===========================================================
 	// Methods
 	// ===========================================================
@@ -887,11 +874,13 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * @author Manuel Stahl
 	 */
 	public class Projection {
-		private final int mWorldSize_2 = getWorldSizePx() / 2;
+		private final int mTileXCount = mOverlayManager.getTilesOverlay().getTileXCount(mZoomLevel);
+		private final int mTileYCount = mOverlayManager.getTilesOverlay().getTileYCount(mZoomLevel);
+		private final int mWorldSizeX_2 = mTileSizePixels*mTileXCount / 2;
+		private final int mWorldSizeY_2 = mTileSizePixels*mTileYCount / 2;
 		private final int mZoomDelta = getMaxZoomLevel() - mZoomLevel;
 		private final int mZoomLevelProjection;
 		private final int mTileSizePixelsProjection;
-		private final int mTileMapZoomProjection;
 
 		private Projection() {
 
@@ -901,15 +890,24 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			mZoomLevelProjection = mZoomLevel;
 			// TODO Draw to attributes and so make it only 'valid' for a short time.
 			mTileSizePixelsProjection = mTileSizePixels;
-			mTileMapZoomProjection = getMapTileZoom(getTileSizePixels());
 		}
 
 		public int getTileSizePixels() {
 			return mTileSizePixelsProjection;
 		}
 
-		public int getTileMapZoom() {
-			return mTileMapZoomProjection;
+		public int getTileXCount() {
+			return mTileXCount;
+		}
+		public int getTileYCount() {
+			return mTileYCount;
+		}
+
+		public int getWorldSizeX_2() {
+			return mWorldSizeX_2;
+		}
+		public int getWorldSizeY_2() {
+			return mWorldSizeY_2;
 		}
 
 		public int getZoomLevel() {
@@ -947,14 +945,14 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 			// In inverse of the -getX()/2 is done when rendering rather than here. Makes it fun that way.
 			out.set(
-					zoomCoord.x - mWorldSize_2,
-					zoomCoord.y - mWorldSize_2);
+					zoomCoord.x - mWorldSizeX_2,
+					zoomCoord.y - mWorldSizeY_2);
 			return out;
 		}
 		public WorldCoord fromViewport(final ViewportCoord viewportCord, final WorldCoord reuse) {
 			return getProjection().fromCurrentZoom(
-					viewportCord.x + getScrollX() + mWorldSize_2 - getWidth()/2,
-					viewportCord.y + getScrollY() + mWorldSize_2 - getHeight()/2,
+					viewportCord.x + getScrollX() + mWorldSizeX_2 - getWidth()/2,
+					viewportCord.y + getScrollY() + mWorldSizeY_2 - getHeight()/2,
 					reuse);
 		}
 	}
@@ -978,9 +976,10 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return true;
 			}
 
-			final int worldSize = getWorldSizePx();
+			final int worldSizeX = 2*mProjection.getWorldSizeX_2();
+			final int worldSizeY = 2*mProjection.getWorldSizeY_2();
 			mScroller.fling(getScrollX(), getScrollY(), (int) -velocityX, (int) -velocityY,
-					-worldSize, worldSize, -worldSize, worldSize);
+					-worldSizeX, worldSizeX, -worldSizeY, worldSizeY);
 			return true;
 		}
 

@@ -52,7 +52,8 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	private boolean mOptionsMenuEnabled = true;
 	private boolean mWrapMap = false;
 
-	private int mWorldSize_2;
+	private int mWorldSizeX_2;
+	private int mWorldSizeY_2;
 
 	/** A drawable loading tile **/
 	private BitmapDrawable mLoadingTile = null;
@@ -79,6 +80,13 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 	public void setAlpha(final int a) {
 		this.mPaint.setAlpha(a);
+	}
+
+	public int getTileXCount(int zoomLevel) {
+		return mTileProvider.getTileXCount(zoomLevel);
+	}
+	public int getTileYCount(int zoomLevel) {
+		return mTileProvider.getTileYCount(zoomLevel);
 	}
 
 	public int getMinimumZoomLevel() {
@@ -113,20 +121,19 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 			return;
 		}
 
-		// Calculate the half-world size
+		// Load the half-world size
 		final Projection pj = osmv.getProjection();
-		final int zoomLevel = pj.getZoomLevel();
-		final int tileZoom = pj.getTileMapZoom();
-		mWorldSize_2 = 1 << (zoomLevel + tileZoom - 1);
+		mWorldSizeX_2 = pj.getWorldSizeX_2();
+		mWorldSizeY_2 = pj.getWorldSizeY_2();
 
 		// Get the area we are drawing to
 		c.getClipBounds(mViewPort);
 
 		// Translate the Canvas coordinates into Mercator coordinates
-		mViewPort.offset(mWorldSize_2, mWorldSize_2);
+		mViewPort.offset(mWorldSizeX_2, mWorldSizeY_2);
 
 		// Draw the tiles!
-		drawTiles(c, pj.getZoomLevel(), pj.getTileSizePixels(), mViewPort);
+		drawTiles(c, pj._getZoomLevel(), pj.getTileSizePixels(), mViewPort);
 	}
 
 	/**
@@ -137,17 +144,16 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	public void drawTiles(final Canvas c, final int zoomLevel, final int tileSizePx,
 			final Rect viewPort) {
 
-		final int tileZoom = MapView.getMapTileZoom(tileSizePx);
-
 		/*
 		 * Calculate the amount of tiles needed for each side around the center one.
 		 */
-		final int tileNeededToLeftOfCenter = (viewPort.left >> tileZoom) - 1;
-		final int tileNeededToRightOfCenter = viewPort.right >> tileZoom;
-		final int tileNeededToTopOfCenter = (viewPort.top >> tileZoom) - 1;
-		final int tileNeededToBottomOfCenter = viewPort.bottom >> tileZoom;
+		final int tileNeededToLeftOfCenter = (viewPort.left / tileSizePx) - 1;
+		final int tileNeededToRightOfCenter = viewPort.right / tileSizePx;
+		final int tileNeededToTopOfCenter = (viewPort.top / tileSizePx) - 1;
+		final int tileNeededToBottomOfCenter = viewPort.bottom / tileSizePx;
 
-		final int mapTileUpperBound = 1 << zoomLevel;
+		final int mapTileUpperBoundX = mTileProvider.getTileXCount(zoomLevel);
+		final int mapTileUpperBoundY = mTileProvider.getTileYCount(zoomLevel);
 
 		// make sure the cache is big enough for all the tiles
 		final int numNeeded = (tileNeededToBottomOfCenter - tileNeededToTopOfCenter + 1)
@@ -158,8 +164,8 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 		for (int y = tileNeededToTopOfCenter; y <= tileNeededToBottomOfCenter; y++) {
 			for (int x = tileNeededToLeftOfCenter; x <= tileNeededToRightOfCenter; x++) {
 				// Construct a MapTile to request from the tile provider.
-				final int tileY = mWrapMap ? y : MyMath.mod(y, mapTileUpperBound);
-				final int tileX = mWrapMap ? x : MyMath.mod(x, mapTileUpperBound);
+				final int tileY = mWrapMap ? y : MyMath.mod(y, mapTileUpperBoundY);
+				final int tileX = mWrapMap ? x : MyMath.mod(x, mapTileUpperBoundX);
 				final MapTile tile = new MapTile(zoomLevel, tileX, tileY);
 
 				Drawable currentMapTile = mTileProvider.getMapTile(tile);
@@ -186,8 +192,8 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 		// draw a cross at center in debug mode
 		if (DEBUGMODE) {
-			final Point centerPoint = new Point(viewPort.centerX() - mWorldSize_2,
-					viewPort.centerY() - mWorldSize_2);
+			final Point centerPoint = new Point(viewPort.centerX() - mWorldSizeX_2,
+					viewPort.centerY() - mWorldSizeY_2);
 			c.drawLine(centerPoint.x, centerPoint.y - 9, centerPoint.x, centerPoint.y + 9, mPaint);
 			c.drawLine(centerPoint.x - 9, centerPoint.y, centerPoint.x + 9, centerPoint.y, mPaint);
 		}
@@ -196,7 +202,7 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 
 	protected void onTileReadyToDraw(final Canvas c, final Drawable currentMapTile,
 			final Rect tileRect) {
-		tileRect.offset(-mWorldSize_2, -mWorldSize_2);
+		tileRect.offset(-mWorldSizeX_2, -mWorldSizeY_2);
 		currentMapTile.setBounds(tileRect);
 		currentMapTile.draw(c);
 	}
