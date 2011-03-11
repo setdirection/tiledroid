@@ -52,10 +52,10 @@ public abstract class MapTileProviderBase implements IMapTileProviderCallback,
 		return getWorldHeight() >> getMaximumZoomLevel()-zoomLevel;
 	}
 	public int getTileXCount(int zoomLevel) {
-		return (int) Math.ceil(getZoomWidth(zoomLevel)/getTileSource().getTileSizePixels());
+		return (int) Math.ceil((double)getZoomWidth(zoomLevel)/(double)getTileSource().getTileSizePixels());
 	}
 	public int getTileYCount(int zoomLevel) {
-		return (int) Math.ceil(getZoomHeight(zoomLevel)/getTileSource().getTileSizePixels());
+		return (int) Math.ceil((double)getZoomHeight(zoomLevel)/(double)getTileSource().getTileSizePixels());
 	}
 
 	/**
