@@ -116,9 +116,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		mResourceProxy = resourceProxy;
 		this.mScroller = new Scroller(context);
 		this.mTileSizePixels = tileSizePixels;
-		if (Math.pow(2, getMapTileZoom(this.mTileSizePixels)) != this.mTileSizePixels) {
-			throw new IllegalArgumentException("Tile size must be a power of two");
-		}
 
 		if (tileProvider == null) {
 			final ITileSource tileSource = getTileSourceFromAttributes(attrs);
@@ -208,20 +205,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		return mTileRequestCompleteHandler;
 	}
 
-	public static int getMapTileZoom(final int tileSizePixels) {
-		if (tileSizePixels <= 0) {
-			return 0;
-		}
-
-		int pixels = tileSizePixels;
-		int a = 0;
-		while (pixels != 0) {
-			pixels >>= 1;
-			a++;
-		}
-		return a - 1;
-	}
-
 	/**
 	 * This class is only meant to be used during on call of onDraw(). Otherwise it may produce
 	 * strange results.
@@ -249,10 +232,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	}
 
 	public void setTileSource(final ITileSource aTileSource) {
-		if (Math.pow(2, getMapTileZoom(aTileSource.getTileSizePixels())) != aTileSource.getTileSizePixels()) {
-			throw new IllegalArgumentException("Tile size must be a power of two");
-		}
-
 		mTileProvider.setTileSource(aTileSource);
 		mTileSizePixels = aTileSource.getTileSizePixels();
 		this.checkZoomButtons();
