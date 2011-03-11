@@ -4,8 +4,6 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Random;
 
-import org.osmdroid.ResourceProxy;
-import org.osmdroid.ResourceProxy.string;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.constants.OpenStreetMapTileProviderConstants;
 import org.slf4j.Logger;
@@ -20,35 +18,23 @@ public abstract class BitmapTileSourceBase implements ITileSource, OpenStreetMap
 
 	private static final Logger logger = LoggerFactory.getLogger(BitmapTileSourceBase.class);
 
-	private static int globalOrdinal = 0;
-
 	private final int mMinimumZoomLevel;
 	private final int mMaximumZoomLevel;
 
-	private final int mOrdinal;
 	protected final String mName;
 	protected final String mImageFilenameEnding;
 	protected final Random random = new Random();
 
 	private final int mTileSizePixels;
 
-	private final string mResourceId;
-
-	public BitmapTileSourceBase(final String aName, final string aResourceId,
+	public BitmapTileSourceBase(final String aName,
 			final int aZoomMinLevel, final int aZoomMaxLevel, final int aTileSizePixels,
 			final String aImageFilenameEnding) {
-		mResourceId = aResourceId;
-		mOrdinal = globalOrdinal++;
 		mName = aName;
 		mMinimumZoomLevel = aZoomMinLevel;
 		mMaximumZoomLevel = aZoomMaxLevel;
 		mTileSizePixels = aTileSizePixels;
 		mImageFilenameEnding = aImageFilenameEnding;
-	}
-
-	@Override
-	public int ordinal() {
-		return mOrdinal;
 	}
 
 	@Override
@@ -77,11 +63,6 @@ public abstract class BitmapTileSourceBase implements ITileSource, OpenStreetMap
 	@Override
 	public int getTileSizePixels() {
 		return mTileSizePixels;
-	}
-
-	@Override
-	public String localizedName(final ResourceProxy proxy) {
-		return proxy.getString(mResourceId);
 	}
 
 	@Override

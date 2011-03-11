@@ -111,7 +111,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		this.mScroller = new Scroller(context);
 
 		if (tileProvider == null) {
-			final ITileSource tileSource = getTileSourceFromAttributes(attrs);
+			final ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
 			tileProvider = new MapTileProviderBasic(context, tileSource);
 		}
 
@@ -807,27 +807,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	public void setMultiTouchControls(final boolean on) {
 		mMultiTouchController = on ? new MultiTouchController<Object>(this, false) : null;
-	}
-
-	private ITileSource getTileSourceFromAttributes(final AttributeSet aAttributeSet) {
-
-		ITileSource tileSource = TileSourceFactory.DEFAULT_TILE_SOURCE;
-
-		if (aAttributeSet != null) {
-			final String tileSourceAttr = aAttributeSet.getAttributeValue(null, "tilesource");
-			if (tileSourceAttr != null) {
-				try {
-					final ITileSource r = TileSourceFactory.getTileSource(tileSourceAttr);
-					logger.info("Using tile source specified in layout attributes: " + r);
-					tileSource = r;
-				} catch (final IllegalArgumentException e) {
-					logger.warn("Invalid tile souce specified in layout attributes: " + tileSource);
-				}
-			}
-		}
-
-		logger.info("Using tile source: " + tileSource);
-		return tileSource;
 	}
 
 	// ===========================================================
