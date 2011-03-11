@@ -5,11 +5,11 @@ import java.io.File;
 import android.os.Environment;
 
 /**
- * 
+ *
  * This class contains constants used by the tile provider.
- * 
+ *
  * @author Neil Boyd
- * 
+ *
  */
 public interface OpenStreetMapTileProviderConstants {
 
@@ -44,7 +44,7 @@ public interface OpenStreetMapTileProviderConstants {
 	 * number of tile download threads, conforming to OSM policy:
 	 * http://wiki.openstreetmap.org/wiki/Tile_usage_policy
 	 */
-	public static final int NUMBER_OF_TILE_DOWNLOAD_THREADS = 2;
+	public static final int NUMBER_OF_TILE_DOWNLOAD_THREADS = 4;
 
 	public static final int NUMBER_OF_TILE_FILESYSTEM_THREADS = 8;
 
