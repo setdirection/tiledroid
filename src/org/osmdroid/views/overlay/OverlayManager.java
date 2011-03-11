@@ -302,9 +302,9 @@ public class OverlayManager extends AbstractList<Overlay> {
 						mapView);
 		}
 
-		if ((mTilesOverlay != null)
+		if (mTilesOverlay instanceof IOverlayMenuProvider
 				&& ((IOverlayMenuProvider) mTilesOverlay).isOptionsMenuEnabled()) {
-			result &= mTilesOverlay.onCreateOptionsMenu(pMenu, menuIdOffset, mapView);
+			result &= ((IOverlayMenuProvider) mTilesOverlay).onCreateOptionsMenu(pMenu, menuIdOffset, mapView);
 		}
 
 		return result;
@@ -318,9 +318,9 @@ public class OverlayManager extends AbstractList<Overlay> {
 				((IOverlayMenuProvider) overlay).onPrepareOptionsMenu(pMenu, menuIdOffset, mapView);
 		}
 
-		if ((mTilesOverlay != null)
+		if (mTilesOverlay instanceof IOverlayMenuProvider
 				&& ((IOverlayMenuProvider) mTilesOverlay).isOptionsMenuEnabled()) {
-			mTilesOverlay.onPrepareOptionsMenu(pMenu, menuIdOffset, mapView);
+			((IOverlayMenuProvider) mTilesOverlay).onPrepareOptionsMenu(pMenu, menuIdOffset, mapView);
 		}
 
 		return true;
@@ -337,7 +337,7 @@ public class OverlayManager extends AbstractList<Overlay> {
 			}
 		}
 
-		if ((mTilesOverlay != null)
+		if (mTilesOverlay instanceof IOverlayMenuProvider
 				&& ((IOverlayMenuProvider) mTilesOverlay).isOptionsMenuEnabled()
 				&& ((IOverlayMenuProvider) mTilesOverlay).onMenuItemSelected(featureId, item,
 						menuIdOffset, mapView)) {
