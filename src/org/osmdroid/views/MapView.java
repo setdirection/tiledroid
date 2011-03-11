@@ -669,8 +669,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		final int zoomSizeX = mProjection.getZoomSizeX_2() << 1;
 		final int zoomSizeY = mProjection.getZoomSizeY_2() << 1;
 		if (mOverlayManager.isWrapMap()) {
-			final int renderOffX = Math.abs(getWidth() - zoomSizeX) >> 1;
-			final int renderOffY = Math.abs(getHeight() - zoomSizeY) >> 1;
+			final int renderOffX = Math.abs(zoomSizeX) >> 1;
+			final int renderOffY = Math.abs(zoomSizeY) >> 1;
 
 			x = Math.max(-renderOffX, Math.min(x, renderOffX));
 			y = Math.max(-renderOffY, Math.min(y, renderOffY));
