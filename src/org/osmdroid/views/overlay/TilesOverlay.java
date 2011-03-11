@@ -81,6 +81,9 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	/*
 	 * World definition. Defaults to a square with no clipping on the trailing edge tiles.
 	 */
+	public int getTileSizePixels() {
+		return mTileProvider.getTileSource().getTileSizePixels();
+	}
 	public int getWorldWidth() {
 		return mTileProvider.getWorldWidth();
 	}
@@ -153,7 +156,7 @@ public class TilesOverlay extends Overlay implements IOverlayMenuProvider {
 	 * than the upper-left corner).
 	 */
 	public void drawTiles(final Canvas c, final Projection pj, final Rect viewPort) {
-		final int tileSizePx = pj.getTileSizePixels();
+		final int tileSizePx = getTileSizePixels();
 		final int zoomLevel = pj.getZoomLevel();
 
 		/*

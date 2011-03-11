@@ -65,9 +65,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	// ===========================================================
 	// Fields
 	// ===========================================================
-
-	private int mTileSizePixels = 0;
-
 	private final OverlayManager mOverlayManager;
 
 	private Projection mProjection;
@@ -106,13 +103,12 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	// Constructors
 	// ===========================================================
 
-	private MapView(final Context context, final int tileSizePixels,
+	private MapView(final Context context,
 			final ResourceProxy resourceProxy, MapTileProviderBase tileProvider,
 			final Handler tileRequestCompleteHandler, final AttributeSet attrs) {
 		super(context, attrs);
 		mResourceProxy = resourceProxy;
 		this.mScroller = new Scroller(context);
-		this.mTileSizePixels = tileSizePixels;
 
 		if (tileProvider == null) {
 			final ITileSource tileSource = getTileSourceFromAttributes(attrs);
@@ -149,30 +145,30 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	 * Constructor used by XML layout resource (uses default tile source).
 	 */
 	public MapView(final Context context, final AttributeSet attrs) {
-		this(context, 256, new DefaultResourceProxyImpl(context), null, null, attrs);
+		this(context, new DefaultResourceProxyImpl(context), null, null, attrs);
 	}
 
 	/**
 	 * Standard Constructor.
 	 */
-	public MapView(final Context context, final int tileSizePixels) {
-		this(context, tileSizePixels, new DefaultResourceProxyImpl(context));
+	public MapView(final Context context) {
+		this(context, new DefaultResourceProxyImpl(context));
 	}
 
-	public MapView(final Context context, final int tileSizePixels,
+	public MapView(final Context context,
 			final ResourceProxy resourceProxy) {
-		this(context, tileSizePixels, resourceProxy, null);
+		this(context, resourceProxy, null);
 	}
 
-	public MapView(final Context context, final int tileSizePixels,
+	public MapView(final Context context,
 			final ResourceProxy resourceProxy, final MapTileProviderBase aTileProvider) {
-		this(context, tileSizePixels, resourceProxy, aTileProvider, null);
+		this(context, resourceProxy, aTileProvider, null);
 	}
 
-	public MapView(final Context context, final int tileSizePixels,
+	public MapView(final Context context,
 			final ResourceProxy resourceProxy, final MapTileProviderBase aTileProvider,
 			final Handler tileRequestCompleteHandler) {
-		this(context, tileSizePixels, resourceProxy, aTileProvider, tileRequestCompleteHandler,
+		this(context, resourceProxy, aTileProvider, tileRequestCompleteHandler,
 				null);
 	}
 
@@ -229,7 +225,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	public void setTileSource(final ITileSource aTileSource) {
 		mTileProvider.setTileSource(aTileSource);
-		mTileSizePixels = aTileSource.getTileSizePixels();
 		this.checkZoomButtons();
 		this.setZoomLevel(getZoomLevel(false)); // revalidate zoom level
 		postInvalidate();
@@ -862,9 +857,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			mZoomDelta = getMaxZoomLevel() - mZoomLevel;
 		}
 
-		public int getTileSizePixels() {
-			return mTileSizePixels;
-		}
 		public int getZoomLevel() {
 			return mZoomLevel;
 		}
