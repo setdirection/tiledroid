@@ -214,11 +214,15 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		if (getAnimation() == null || getAnimation().hasEnded()) {
 			mCenter.set(worldCenter.x, worldCenter.y);
 
-			final ViewportCoord curZoom = mProjection.toViewport(worldCenter, null);
 			logger.debug("StartScroll");
-			mScroller.startScroll(getScrollX(), getScrollY(),
-					curZoom.x - getScrollX(), curZoom.y - getScrollY(),
-					jump ? 0 : 500);
+			final ViewportCoord viewCord = mProjection.toViewport(worldCenter, null);
+			if (jump) {
+				scrollTo(viewCord.x, viewCord.y);
+			} else {
+				mScroller.startScroll(getScrollX(), getScrollY(),
+						viewCord.x - getScrollX(), viewCord.y - getScrollY(),
+						500);
+			}
 			postInvalidate();
 		}
 	}
