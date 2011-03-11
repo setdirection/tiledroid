@@ -6,11 +6,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.osmdroid.DefaultResourceProxyImpl;
 import org.osmdroid.ResourceProxy;
 import org.osmdroid.views.MapView;
+import org.osmdroid.views.MapView.WorldCoord;
 import org.osmdroid.views.util.constants.OverlayConstants;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Point;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -275,14 +275,14 @@ public abstract class Overlay implements OverlayConstants {
 		 * @param y
 		 *            The y in screen coordinates.
 		 * @param snapPoint
-		 *            To be filled with the the interesting point (in screen coordinates) that is
+		 *            To be filled with the the interesting point (in world coordinates) that is
 		 *            closest to the given x and y. Can be untouched if not snapping.
 		 * @param mapView
 		 *            The {@link MapView} that is requesting the snap. Use MapView.getProjection()
 		 *            to convert between on-screen pixels and latitude/longitude pairs.
 		 * @return Whether or not to snap to the interesting point.
 		 */
-		boolean onSnapToItem(int x, int y, Point snapPoint, MapView mapView);
+		boolean onSnapToItem(int x, int y, WorldCoord snapPoint, MapView mapView);
 	}
 
 }

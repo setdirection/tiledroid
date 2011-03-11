@@ -244,7 +244,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		final WorldCoord center = getMapCenter();
 
 		// snap for all snappables
-		final Point snapPoint = new Point();
 		if (curZoomLevel != newZoomLevel) {
 			// XXX why do we need a new projection here?
 			mProjection = new Projection(newZoomLevel);
@@ -258,6 +257,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 		this.checkZoomButtons();
 
+		final WorldCoord snapPoint = new WorldCoord();
 		if (mOverlayManager.onSnapToItem(getScrollX(), getScrollY(), snapPoint, this)) {
 			scrollTo(snapPoint.x, snapPoint.y);
 		}
