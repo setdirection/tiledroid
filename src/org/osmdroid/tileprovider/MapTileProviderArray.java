@@ -24,9 +24,9 @@ import android.graphics.drawable.Drawable;
  * providers in the chain, then the failure result is passed to the base class. The
  * {@link MapTileProviderArray} provides a mechanism so that only one unique tile-request can be in
  * the map tile request chain at a time.
- * 
+ *
  * @author Marc Kurtz
- * 
+ *
  */
 public class MapTileProviderArray extends MapTileProviderBase {
 
@@ -38,25 +38,18 @@ public class MapTileProviderArray extends MapTileProviderBase {
 
 	/**
 	 * Creates an {@link MapTileProviderArray} with no tile providers.
-	 * 
-	 * @param aRegisterReceiver
-	 *            a {@link IRegisterReceiver}
 	 */
-	protected MapTileProviderArray(final ITileSource pTileSource,
-			final IRegisterReceiver pRegisterReceiver) {
-		this(pTileSource, pRegisterReceiver, new MapTileModuleProviderBase[0]);
+	protected MapTileProviderArray(final ITileSource pTileSource) {
+		this(pTileSource, new MapTileModuleProviderBase[0]);
 	}
 
 	/**
 	 * Creates an {@link MapTileProviderArray} with the specified tile providers.
-	 * 
-	 * @param aRegisterReceiver
-	 *            a {@link IRegisterReceiver}
+	 *
 	 * @param tileProviderArray
 	 *            an array of {@link MapTileModuleProviderBase}
 	 */
 	public MapTileProviderArray(final ITileSource pTileSource,
-			final IRegisterReceiver aRegisterReceiver,
 			final MapTileModuleProviderBase[] pTileProviderArray) {
 		super(pTileSource);
 

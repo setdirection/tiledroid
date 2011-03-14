@@ -44,7 +44,7 @@ public class MapTileProviderBasic extends MapTileProviderArray {
 	 */
 	public MapTileProviderBasic(final IRegisterReceiver pRegisterReceiver,
 			final INetworkAvailablityCheck aNetworkAvailablityCheck, final ITileSource pTileSource) {
-		super(pTileSource, pRegisterReceiver);
+		super(pTileSource);
 
 		final TileWriter tileWriter = new TileWriter();
 
