@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.osmdroid.tileprovider.modules.MapTileInterpolator;
 import org.osmdroid.tileprovider.modules.MapTileModuleProviderBase;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
 import org.slf4j.Logger;
@@ -106,7 +107,15 @@ public class MapTileProviderArray extends MapTileProviderBase {
 					provider.loadMapTileAsync(state);
 				else
 					mapTileRequestFailed(state);
+
+				// Default over to attempting to resize the tiles that we currently have
+				MapTileInterpolator interp = MapTileInterpolator.create(pTile, mTileCache);
+				if (interp != null) {
+					mTileCache.putTile(pTile, interp);
+					return interp;
+				}
 			}
+
 			return null;
 		}
 	}

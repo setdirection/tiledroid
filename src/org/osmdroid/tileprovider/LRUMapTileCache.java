@@ -6,8 +6,6 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 public class LRUMapTileCache extends LinkedHashMap<MapTile, Drawable> {
@@ -28,18 +26,6 @@ public class LRUMapTileCache extends LinkedHashMap<MapTile, Drawable> {
 			logger.info("Tile cache increased from " + mCapacity + " to " + aCapacity);
 			mCapacity = aCapacity;
 		}
-	}
-
-	@Override
-	public Drawable remove(final Object aKey) {
-		final Drawable drawable = super.remove(aKey);
-		if (drawable instanceof BitmapDrawable) {
-			final Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
-			if (bitmap != null) {
-				bitmap.recycle();
-			}
-		}
-		return drawable;
 	}
 
 	@Override
