@@ -930,9 +930,11 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return true;
 			}
 
-			final int zoomSizeX = 2*mProjection.getZoomSizeX_2();
-			final int zoomSizeY = 2*mProjection.getZoomSizeY_2();
-			mScroller.fling(getScrollX(), getScrollY(), (int) -velocityX, (int) -velocityY,
+			final int zoomSizeX = mProjection.getZoomSizeX_2();
+			final int zoomSizeY = mProjection.getZoomSizeY_2();
+			final double scaledVelocityX = -0.6*velocityX;
+			final double scaledVelocityY = -0.6*velocityY;
+			mScroller.fling(getScrollX(), getScrollY(), (int) scaledVelocityX, (int) scaledVelocityY,
 					-zoomSizeX, zoomSizeX, -zoomSizeY, zoomSizeY);
 
 			// Ensure that we are actually running the scroll animation
