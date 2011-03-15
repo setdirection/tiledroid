@@ -73,6 +73,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	/** Handles map scrolling */
 	private final Scroller mScroller;
+	private boolean mFlinging = false;
 
 	private final ScaleAnimation mZoomInAnimation;
 	private final ScaleAnimation mZoomOutAnimation;
@@ -213,6 +214,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	void setMapCenter(final WorldCoord worldCenter, final boolean jump) {
 		if (getAnimation() == null || getAnimation().hasEnded()) {
 			mCenter.set(worldCenter.x, worldCenter.y);
+
+			mFlinging = false;
 
 			logger.debug("StartScroll");
 			final ViewportCoord viewCord = mProjection.toViewport(worldCenter, null);
@@ -394,6 +397,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	@Override
 	public void startAnimation(Animation animation) {
 		mAnimationListener.animating = true;
+		mFlinging = false;
 
 		super.startAnimation(animation);
 	}
@@ -667,6 +671,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			if (mScroller.isFinished()) {
 				// This will facilitate snapping-to any Snappable points.
 				setZoomLevel(getZoomLevel());
+				mFlinging = false;
 			} else {
 				scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
 			}
@@ -924,6 +929,11 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 		@Override
 		public boolean onDown(final MotionEvent e) {
+			if (mFlinging && !mScroller.isFinished()) {
+				mScroller.forceFinished(true);
+				mFlinging = false;
+			}
+
 			if (MapView.this.mOverlayManager.onDown(e, MapView.this)) {
 				return true;
 			}
@@ -945,6 +955,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			final double scaledVelocityY = -0.6*velocityY;
 			mScroller.fling(getScrollX(), getScrollY(), (int) scaledVelocityX, (int) scaledVelocityY,
 					-zoomSizeX, zoomSizeX, -zoomSizeY, zoomSizeY);
+			mFlinging = true;
 
 			// Ensure that we are actually running the scroll animation
 			postInvalidate();
