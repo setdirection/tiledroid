@@ -350,7 +350,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return false;
 			} else {
 				mAnimationListener.targetZoomLevel = getZoomLevel() + 1;
-				mAnimationListener.animating = true;
 				startAnimation(mZoomInAnimation);
 				return true;
 			}
@@ -375,7 +374,6 @@ public class MapView extends ViewGroup implements MapViewConstants,
 				return false;
 			} else {
 				mAnimationListener.targetZoomLevel = getZoomLevel() - 1;
-				mAnimationListener.animating = true;
 				startAnimation(mZoomOutAnimation);
 				return true;
 			}
@@ -387,6 +385,13 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	boolean zoomOutFixing(final WorldCoord point) {
 		setMapCenter(point, false); // TODO should fix on point, not center on it
 		return zoomOut();
+	}
+
+	@Override
+	public void startAnimation(Animation animation) {
+		mAnimationListener.animating = true;
+
+		super.startAnimation(animation);
 	}
 
 	public WorldCoord getMapCenter() {
