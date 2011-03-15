@@ -217,6 +217,10 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			logger.debug("StartScroll");
 			final ViewportCoord viewCord = mProjection.toViewport(worldCenter, null);
 			if (jump) {
+				if (!mScroller.isFinished()) {
+					mScroller.forceFinished(true);
+				}
+
 				scrollTo(viewCord.x, viewCord.y);
 			} else {
 				mScroller.startScroll(getScrollX(), getScrollY(),
