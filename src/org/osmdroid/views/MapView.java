@@ -684,17 +684,15 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	public void scrollTo(int x, int y) {
 		// Adjust the scroll position before it is actually updated.
 		// Either wrap or clip the parameters based on the WrapMap flag
-		final int zoomSizeX = mProjection.getZoomSizeX_2() << 1;
-		final int zoomSizeY = mProjection.getZoomSizeY_2() << 1;
 		if (mOverlayManager.isWrapMap()) {
-			final int renderOffX = Math.abs(zoomSizeX) >> 1;
-			final int renderOffY = Math.abs(zoomSizeY) >> 1;
+			final int renderOffX = mProjection.getZoomSizeX_2();
+			final int renderOffY = mProjection.getZoomSizeY_2();
 
 			x = Math.max(-renderOffX, Math.min(x, renderOffX));
 			y = Math.max(-renderOffY, Math.min(y, renderOffY));
 		} else {
-			x = x % zoomSizeX;
-			y = y % zoomSizeY;
+			x = x % (mProjection.getZoomSizeX_2() << 1);
+			y = y % (mProjection.getZoomSizeY_2() << 1);
 		}
 
 		super.scrollTo(x, y);
