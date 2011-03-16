@@ -728,6 +728,8 @@ public class MapView extends ViewGroup implements MapViewConstants,
 			c.setMatrix(mMatrix);
 		}
 
+		c.translate(-mProjection.getZoomSizeX_2(), -mProjection.getZoomSizeY_2());
+
 		/* Draw background */
 		// c.drawColor(mBackgroundColor);
 

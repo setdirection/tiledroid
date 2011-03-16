@@ -41,9 +41,6 @@ public class TilesOverlay extends Overlay {
 
 	private boolean mWrapMap = false;
 
-	private int mZoomSizeX_2;
-	private int mZoomSizeY_2;
-
 	/** A drawable loading tile **/
 	private BitmapDrawable mLoadingTile = null;
 	private int mLoadingBackgroundColor = Color.rgb(216, 208, 208);
@@ -124,19 +121,11 @@ public class TilesOverlay extends Overlay {
 			return;
 		}
 
-		// Load the half-world size
-		final Projection pj = osmv.getProjection();
-		mZoomSizeX_2 = pj.getZoomSizeX_2();
-		mZoomSizeY_2 = pj.getZoomSizeY_2();
-
 		// Get the area we are drawing to
 		c.getClipBounds(mViewPort);
 
-		// Translate the Canvas coordinates into Mercator coordinates
-		mViewPort.offset(mZoomSizeX_2, mZoomSizeY_2);
-
 		// Draw the tiles!
-		drawTiles(c, pj, mViewPort);
+		drawTiles(c, osmv.getProjection(), mViewPort);
 	}
 
 	/**
@@ -175,7 +164,6 @@ public class TilesOverlay extends Overlay {
 				Drawable currentMapTile = null;
 
 				mTileRect.set(x * tileSizePx, y * tileSizePx, x * tileSizePx + tileSizePx, y * tileSizePx + tileSizePx);
-				mTileRect.offset(-mZoomSizeX_2, -mZoomSizeY_2);
 
 				// Render the background under this, allowing transparent sections to have a background
 				// TODO : See if we can optimize this so we aren't double rendering the same data
@@ -205,8 +193,7 @@ public class TilesOverlay extends Overlay {
 
 		// draw a cross at center in debug mode
 		if (DEBUGMODE) {
-			final Point centerPoint = new Point(viewPort.centerX() - mZoomSizeX_2,
-					viewPort.centerY() - mZoomSizeY_2);
+			final Point centerPoint = new Point(viewPort.centerX(), viewPort.centerY());
 			c.drawLine(centerPoint.x, centerPoint.y - 9, centerPoint.x, centerPoint.y + 9, mPaint);
 			c.drawLine(centerPoint.x - 9, centerPoint.y, centerPoint.x + 9, centerPoint.y, mPaint);
 		}
