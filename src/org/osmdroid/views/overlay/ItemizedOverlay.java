@@ -8,7 +8,6 @@ import org.osmdroid.ResourceProxy;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
 import org.osmdroid.views.MapView.ViewportCoord;
-import org.osmdroid.views.MapView.WorldCoord;
 import org.osmdroid.views.MapView.ZoomCoord;
 
 import android.content.Context;
@@ -242,8 +241,7 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		final ViewportCoord coord = new ViewportCoord((int) event.getX(), (int) event.getY());
 
 		/* These objects are created to avoid construct new ones every cycle. */
-		// TODO : Is this doing what we want it to? Verify (Consider the distinction between canvas viewport and view viewport)
-		final WorldCoord touchScreenCoords = pj.fromViewport(coord, null);
+		final ZoomCoord touchScreenCoords = pj.toCurrentZoom(pj.fromViewport(coord, null), null);
 
 		touchPoint = touchScreenCoords;
 
