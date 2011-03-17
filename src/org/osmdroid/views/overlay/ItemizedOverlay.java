@@ -280,15 +280,12 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		final Point markerHotspot = (item.getMarkerHotspot(0) == null) ? this.mDefaultItem
 				.getMarkerHotspot(0) : item.getMarkerHotspot(0);
 
-		// Scale the markerHotspot
-		markerHotspot.set((int) (markerHotspot.x * mScale), (int) (markerHotspot.y * mScale));
-
 		// calculate bounding rectangle
 		final int markerWidth = (int) (marker.getIntrinsicWidth() * mScale);
 		final int markerHeight = (int) (marker.getIntrinsicHeight() * mScale);
-		final int left = ctr.x - markerHotspot.x;
+		final int left = ctr.x - (int) (markerHotspot.x * mScale);
 		final int right = left + markerWidth;
-		final int top = ctr.y - markerHotspot.y;
+		final int top = ctr.y - (int) (markerHotspot.y * mScale);
 		final int bottom = top + markerHeight;
 
 		rect.set(left, top, right, bottom);
