@@ -670,7 +670,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		if (mScroller.computeScrollOffset()) {
 			if (mScroller.isFinished()) {
 				// This will facilitate snapping-to any Snappable points.
-				setZoomLevel(getZoomLevel());
+				setZoomLevel(getZoomLevel(false));
 				mFlinging = false;
 			} else {
 				scrollTo(mScroller.getCurrX(), mScroller.getCurrY());
