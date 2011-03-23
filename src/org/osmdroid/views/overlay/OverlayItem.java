@@ -85,6 +85,10 @@ public class OverlayItem {
 		return mPoint;
 	}
 
+	public boolean hasMarker() {
+		return mMarker != null;
+	}
+
 	/*
 	 * (copied from Google API docs) Returns the marker that should be used when drawing this item
 	 * on the map. A null value means that the default marker should be drawn. Different markers can
