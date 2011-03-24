@@ -6,7 +6,6 @@ import org.osmdroid.tileprovider.IRegisterReceiver;
 import org.osmdroid.tileprovider.MapTile;
 import org.osmdroid.tileprovider.MapTileRequestState;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,10 +38,6 @@ public class MapTileFilesystemProvider extends MapTileFileStorageProviderBase {
 	// ===========================================================
 	// Constructors
 	// ===========================================================
-
-	public MapTileFilesystemProvider(final IRegisterReceiver pRegisterReceiver) {
-		this(pRegisterReceiver, TileSourceFactory.DEFAULT_TILE_SOURCE);
-	}
 
 	public MapTileFilesystemProvider(final IRegisterReceiver pRegisterReceiver,
 			final ITileSource aTileSource) {
