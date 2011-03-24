@@ -211,7 +211,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		return mProjection;
 	}
 
-	void setMapCenter(final WorldCoord worldCenter, final boolean jump) {
+	public void setMapCenter(final WorldCoord worldCenter, final boolean jump) {
 		if (getAnimation() == null || getAnimation().hasEnded()) {
 			mCenter.set(worldCenter.x, worldCenter.y);
 
