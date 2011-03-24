@@ -370,6 +370,15 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		return zoomIn(1);
 	}
 
+	public boolean zoomFixing(final WorldCoord point, final int count) {
+		setMapCenter(point, false); // TODO should fix on point, not center on it
+		if (count < 0) {
+			return zoomOut(-1*count);
+		} else {
+			return zoomIn(count);
+		}
+	}
+
 	/**
 	 * Zoom out by one zoom level.
 	 */
