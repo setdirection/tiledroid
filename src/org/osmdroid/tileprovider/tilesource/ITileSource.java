@@ -10,7 +10,7 @@ public interface ITileSource {
 
 	/**
 	 * A human-friendly name for this tile source
-	 * 
+	 *
 	 * @return the tile source name
 	 */
 	String name();
@@ -64,4 +64,18 @@ public interface ITileSource {
 	 * @return the tile size in pixels
 	 */
 	public int getTileSizePixels();
+
+	/**
+	 * Gets the width of the world at the maximum zoom level.
+	 *
+	 * @return the world size in pixels
+	 */
+	public int getWorldWidth();
+
+	/**
+	 * Gets the height of the world at the maximum zoom level.
+	 *
+	 * @return the world size in pixels
+	 */
+	public int getWorldHeight();
 }

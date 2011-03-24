@@ -40,10 +40,10 @@ public abstract class MapTileProviderBase implements IMapTileProviderCallback,
 	 * World definition. Defaults to a square with no clipping on the trailing edge tiles.
 	 */
 	public int getWorldWidth() {
-		return mTileSource.getTileSizePixels()*getTileXCount(getMaximumZoomLevel());
+		return getTileSource().getWorldWidth();
 	}
 	public int getWorldHeight() {
-		return mTileSource.getTileSizePixels()*getTileYCount(getMaximumZoomLevel());
+		return getTileSource().getWorldHeight();
 	}
 	public int getZoomWidth(int zoomLevel) {
 		return getWorldWidth() >> getMaximumZoomLevel()-zoomLevel;
