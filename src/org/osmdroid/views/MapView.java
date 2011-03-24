@@ -349,14 +349,14 @@ public class MapView extends ViewGroup implements MapViewConstants,
 	/**
 	 * Zoom in by one zoom level.
 	 */
-	boolean zoomIn() {
+	boolean zoomIn(int count) {
 
 		if (canZoomIn()) {
 			if (mAnimationListener.animating) {
 				// TODO extend zoom (and return true)
 				return false;
 			} else {
-				mAnimationListener.targetZoomLevel = getZoomLevel() + 1;
+				mAnimationListener.targetZoomLevel = getZoomLevel() + count;
 				startAnimation(mZoomInAnimation);
 				return true;
 			}
@@ -367,20 +367,20 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	public boolean zoomInFixing(final WorldCoord point) {
 		setMapCenter(point, false); // TODO should fix on point, not center on it
-		return zoomIn();
+		return zoomIn(1);
 	}
 
 	/**
 	 * Zoom out by one zoom level.
 	 */
-	boolean zoomOut() {
+	boolean zoomOut(int count) {
 
 		if (canZoomOut()) {
 			if (mAnimationListener.animating) {
 				// TODO extend zoom (and return true)
 				return false;
 			} else {
-				mAnimationListener.targetZoomLevel = getZoomLevel() - 1;
+				mAnimationListener.targetZoomLevel = getZoomLevel() - count;
 				startAnimation(mZoomOutAnimation);
 				return true;
 			}
@@ -391,7 +391,7 @@ public class MapView extends ViewGroup implements MapViewConstants,
 
 	boolean zoomOutFixing(final WorldCoord point) {
 		setMapCenter(point, false); // TODO should fix on point, not center on it
-		return zoomOut();
+		return zoomOut(1);
 	}
 
 	@Override
@@ -1029,9 +1029,9 @@ public class MapView extends ViewGroup implements MapViewConstants,
 		@Override
 		public void onZoom(final boolean zoomIn) {
 			if (zoomIn) {
-				zoomIn();
+				zoomIn(1);
 			} else {
-				zoomOut();
+				zoomOut(1);
 			}
 		}
 
