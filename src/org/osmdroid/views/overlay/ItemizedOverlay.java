@@ -8,6 +8,7 @@ import org.osmdroid.ResourceProxy;
 import org.osmdroid.views.MapView;
 import org.osmdroid.views.MapView.Projection;
 import org.osmdroid.views.MapView.ViewportCoord;
+import org.osmdroid.views.MapView.WorldCoord;
 import org.osmdroid.views.MapView.ZoomCoord;
 
 import android.content.Context;
@@ -37,6 +38,9 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 	// Constants
 	// ===========================================================
 	static final boolean DEBUG_GRAPHICS = false;
+
+	public static final int FOCUS_ON_PADDING_X = 100;
+	public static final int FOCUS_ON_PADDING_Y = 100;
 
 	// ===========================================================
 	// Fields
@@ -198,6 +202,36 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		boudaryPaint.setColor(Color.BLUE);
 	}
 
+	public void focusOn(MapView mapView) {
+		if (mItemList.size() < 1) {
+			return;
+		}
+
+		// Determine the world coordinate bounding box for all overlay items (ignoring the scale factor for the time being)
+		Point firstPoint = mItemList.get(0).getPoint();
+		Rect bounds = new Rect(firstPoint.x, firstPoint.y, firstPoint.x, firstPoint.y);
+
+		for (T overlay : mItemList) {
+			final Rect rect = new Rect();
+			getItemWorldBoundingRetangle(overlay, rect);
+
+			bounds.union(rect);
+		}
+		bounds.inset(-FOCUS_ON_PADDING_X, -FOCUS_ON_PADDING_Y);
+
+		// Determine the zoom level that will allow all elements to be displayed in the view
+		double widthRatio = (double)mapView.getWidth()/(double)bounds.width();
+		double heightRatio = (double)mapView.getHeight()/(double)bounds.height();
+		double zoomDeltaWidth = Math.ceil(Math.log(widthRatio)/Math.log(2));
+		double zoomDeltaHeight = Math.ceil(Math.log(heightRatio)/Math.log(2));
+		int zoomDelta = (int)Math.max(zoomDeltaWidth, zoomDeltaHeight);
+
+		// Do it!
+		mapView.zoomFixing(
+				new WorldCoord(bounds.centerX(), bounds.centerY()),
+				zoomDelta);
+	}
+
 	/**
 	 *
 	 * @param canvas
@@ -284,6 +318,24 @@ public class ItemizedOverlay<T extends OverlayItem> extends Overlay {
 		final int left = ctr.x - (int) (markerHotspot.x * mScale);
 		final int right = left + markerWidth;
 		final int top = ctr.y - (int) (markerHotspot.y * mScale);
+		final int bottom = top + markerHeight;
+
+		rect.set(left, top, right, bottom);
+		return rect;
+	}
+	private Rect getItemWorldBoundingRetangle(final T item, final Rect rect) {
+		final Drawable marker = (item.getMarker(0) == null) ? this.mDefaultItem.getMarker(0) : item
+				.getMarker(0);
+		final Point markerHotspot = (item.getMarkerHotspot(0) == null) ? this.mDefaultItem
+				.getMarkerHotspot(0) : item.getMarkerHotspot(0);
+		final Point ctr = item.getPoint();
+
+		// calculate bounding rectangle
+		final int markerWidth = marker.getIntrinsicWidth();
+		final int markerHeight = marker.getIntrinsicHeight();
+		final int left = ctr.x - markerHotspot.x;
+		final int right = left + markerWidth;
+		final int top = ctr.y - markerHotspot.y;
 		final int bottom = top + markerHeight;
 
 		rect.set(left, top, right, bottom);
