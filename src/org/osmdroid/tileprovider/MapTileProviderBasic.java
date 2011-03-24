@@ -7,7 +7,6 @@ import org.osmdroid.tileprovider.modules.MapTileFilesystemProvider;
 import org.osmdroid.tileprovider.modules.NetworkAvailabliltyCheck;
 import org.osmdroid.tileprovider.modules.TileWriter;
 import org.osmdroid.tileprovider.tilesource.ITileSource;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
 import org.osmdroid.tileprovider.util.SimpleRegisterReceiver;
 
 import android.content.Context;
@@ -21,15 +20,6 @@ import android.content.Context;
  *
  */
 public class MapTileProviderBasic extends MapTileProviderArray {
-
-	// private static final Logger logger = LoggerFactory.getLogger(MapTileProviderBasic.class);
-
-	/**
-	 * Creates a {@link MapTileProviderBasic}.
-	 */
-	public MapTileProviderBasic(final Context pContext) {
-		this(pContext, TileSourceFactory.DEFAULT_TILE_SOURCE);
-	}
 
 	/**
 	 * Creates a {@link MapTileProviderBasic}.
